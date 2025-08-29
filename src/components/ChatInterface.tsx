@@ -40,16 +40,35 @@ export function ChatInterface() {
 
   if (modelsError || models.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No Models Available</h3>
-          <p className="text-muted-foreground mb-4">
-            {modelsError || 'No AI models are configured. Please check your environment variables.'}
+      <div className="flex items-center justify-center h-screen bg-gray-900">
+        <div className="text-center max-w-2xl mx-auto p-8">
+          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Bot size={28} className="text-white" />
+          </div>
+          <h3 className="text-2xl font-semibold text-white mb-4">Welcome to Nexa AI Chat</h3>
+          <p className="text-gray-400 mb-6 text-lg leading-relaxed">
+            {modelsError 
+              ? 'Unable to load AI models. Please check your configuration.' 
+              : 'No API keys configured yet. Add your API keys in the Vercel dashboard to enable AI models.'}
           </p>
-          <p className="text-sm text-muted-foreground">
-            Make sure you have set at least one of: OPENAI_API_KEY, ANTHROPIC_API_KEY, or GOOGLE_API_KEY
-          </p>
+          <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
+            <p className="text-sm text-gray-300 mb-4 font-medium">
+              🔑 Add API Keys in Vercel:
+            </p>
+            <div className="text-left space-y-2 text-sm text-gray-400">
+              <p>• Go to your Vercel project dashboard</p>
+              <p>• Click Settings → Environment Variables</p>
+              <p>• Add any of these keys to enable models:</p>
+              <div className="ml-4 mt-2 space-y-1 text-xs">
+                <p>- GOOGLE_GENERATIVE_AI_API_KEY (for Gemini)</p>
+                <p>- GROQ_API_KEY (for Llama models)</p>
+                <p>- COHERE_API_KEY (for Command)</p>
+                <p>- OPENAI_API_KEY (for GPT-3.5)</p>
+                <p>- ANTHROPIC_API_KEY (for Claude)</p>
+              </div>
+              <p className="mt-3">• Redeploy after adding keys</p>
+            </div>
+          </div>
         </div>
       </div>
     );
