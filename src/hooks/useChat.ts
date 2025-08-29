@@ -112,7 +112,7 @@ export function useChat(initialModel: string = DEFAULT_MODEL) {
                     )
                   );
                 }
-              } catch (_e) {
+              } catch {
                 // Ignore parsing errors
               }
             }

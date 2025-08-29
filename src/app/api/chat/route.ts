@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
       
       // Provide more specific error messages
       let errorMessage = 'Unknown error';
-      if (error.message) {
+      if (error instanceof Error && error.message) {
         if (error.message.includes('API key')) {
           errorMessage = `${modelConfig.provider} API key is invalid or missing`;
         } else if (error.message.includes('quota') || error.message.includes('limit')) {
@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
           error: `${modelConfig.provider} error: ${errorMessage}`,
           provider: modelConfig.provider,
           model: modelId,
-          details: error.message || 'No additional details'
+          details: error instanceof Error ? error.message : 'No additional details'
         },
         { status: 500 }
       );

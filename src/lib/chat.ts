@@ -79,7 +79,7 @@ export class ChatAPI {
                       controller.enqueue(content);
                     }
                   }
-                } catch (_e) {
+                } catch {
                   // Ignore parsing errors for incomplete chunks
                 }
               }
