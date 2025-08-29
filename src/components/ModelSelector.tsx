@@ -1,7 +1,6 @@
 'use client';
 
 import { AIModel } from '@/types/chat';
-import { Cpu } from 'lucide-react';
 
 interface ModelSelectorProps {
   models: AIModel[];

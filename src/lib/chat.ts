@@ -1,4 +1,4 @@
-import { ChatRequest, ChatResponse, Message, AIModel } from '@/types/chat';
+import { ChatRequest, Message, AIModel } from '@/types/chat';
 
 export class ChatAPI {
   private baseUrl: string;
@@ -79,7 +79,7 @@ export class ChatAPI {
                       controller.enqueue(content);
                     }
                   }
-                } catch (e) {
+                } catch (_e) {
                   // Ignore parsing errors for incomplete chunks
                 }
               }

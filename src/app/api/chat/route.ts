@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
           usage: result.usage,
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`${modelConfig.provider} error for model ${modelId}:`, error);
       
       // Provide more specific error messages

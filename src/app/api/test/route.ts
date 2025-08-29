@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
       usage: result.usage
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json({
       success: false,
       model: modelId,
