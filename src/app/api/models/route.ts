@@ -29,9 +29,22 @@ export async function GET() {
       }
     });
 
+    // If no models are available, return an error with helpful message
+    if (availableModels.length === 0) {
+      return NextResponse.json(
+        { 
+          error: 'No API keys configured. Please add at least one of: GOOGLE_GENERATIVE_AI_API_KEY, GROQ_API_KEY, COHERE_API_KEY, ANTHROPIC_API_KEY, or OPENAI_API_KEY',
+          models: [],
+          count: 0
+        },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({
       models: availableModels,
       count: availableModels.length,
+      message: `Found ${availableModels.length} available models`
     });
   } catch (error) {
     console.error('Models API error:', error);

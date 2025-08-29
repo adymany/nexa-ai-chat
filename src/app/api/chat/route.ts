@@ -63,35 +63,50 @@ export async function POST(req: NextRequest) {
     switch (modelConfig.provider) {
       case 'openai':
         if (!process.env.OPENAI_API_KEY) {
-          return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 });
+          return NextResponse.json({ 
+            error: 'OpenAI API key not configured. Please add OPENAI_API_KEY to your environment variables, or use a different model like Gemini or Groq.',
+            suggestion: 'Try switching to Gemini 1.5 Flash or one of the Groq models which are available.'
+          }, { status: 500 });
         }
         model = openai(modelId);
         break;
         
       case 'anthropic':
         if (!process.env.ANTHROPIC_API_KEY) {
-          return NextResponse.json({ error: 'Anthropic API key not configured' }, { status: 500 });
+          return NextResponse.json({ 
+            error: 'Anthropic API key not configured. Please add ANTHROPIC_API_KEY to your environment variables, or use a different model.',
+            suggestion: 'Try switching to Gemini 1.5 Flash or one of the Groq models which are available.'
+          }, { status: 500 });
         }
         model = anthropic(modelId);
         break;
         
       case 'google':
         if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY && !process.env.GEMINI_API_KEY && !process.env.GOOGLE_API_KEY) {
-          return NextResponse.json({ error: 'Google API key not configured' }, { status: 500 });
+          return NextResponse.json({ 
+            error: 'Google API key not configured. Please add GOOGLE_GENERATIVE_AI_API_KEY to your environment variables.',
+            suggestion: 'Add your Google AI API key to use Gemini models.'
+          }, { status: 500 });
         }
         model = google(modelId);
         break;
         
       case 'groq':
         if (!process.env.GROQ_API_KEY) {
-          return NextResponse.json({ error: 'Groq API key not configured' }, { status: 500 });
+          return NextResponse.json({ 
+            error: 'Groq API key not configured. Please add GROQ_API_KEY to your environment variables.',
+            suggestion: 'Add your Groq API key to use lightning-fast Llama models.'
+          }, { status: 500 });
         }
         model = groq(modelId);
         break;
         
       case 'cohere':
         if (!process.env.COHERE_API_KEY) {
-          return NextResponse.json({ error: 'Cohere API key not configured' }, { status: 500 });
+          return NextResponse.json({ 
+            error: 'Cohere API key not configured. Please add COHERE_API_KEY to your environment variables.',
+            suggestion: 'Add your Cohere API key to use the Command model.'
+          }, { status: 500 });
         }
         model = cohere(modelId);
         break;

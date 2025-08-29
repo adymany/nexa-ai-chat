@@ -4,11 +4,11 @@
   "installCommand": "npm install",
   "devCommand": "npm run dev",
   "env": {
-    "OPENAI_API_KEY": "@openai_api_key",
-    "ANTHROPIC_API_KEY": "@anthropic_api_key",
     "GOOGLE_GENERATIVE_AI_API_KEY": "@google_generative_ai_api_key",
     "GROQ_API_KEY": "@groq_api_key",
     "COHERE_API_KEY": "@cohere_api_key",
+    "ANTHROPIC_API_KEY": "@anthropic_api_key",
+    "OPENAI_API_KEY": "@openai_api_key",
     "DEFAULT_MODEL": "gemini-1.5-flash"
   },
   "regions": ["iad1"],
