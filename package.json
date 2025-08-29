@@ -6,8 +6,7 @@
   "description": "Free multi-model AI chatbot with authentication and session management",
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
-    "postbuild": "prisma generate",
+    "build": "prisma generate && next build --turbopack",
     "start": "next start",
     "lint": "eslint"
   },
