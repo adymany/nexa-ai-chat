@@ -5,7 +5,7 @@ import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
 import { ModelSelector } from './ModelSelector';
 import { SessionSidebar } from './SessionSidebar';
-import { Trash2, RefreshCw, AlertCircle, Bot } from 'lucide-react';
+import { Trash2, RefreshCw, AlertCircle, Bot, Menu } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -14,6 +14,7 @@ export function ChatInterface() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { user } = useAuth();
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const {
     messages,
     currentModel,
@@ -77,11 +78,13 @@ export function ChatInterface() {
 
   const handleSessionSelect = (sessionId: string) => {
     setCurrentSessionId(sessionId);
+    setIsMobileSidebarOpen(false); // Close mobile sidebar when session is selected
   };
 
   const handleNewSession = () => {
     setCurrentSessionId(null);
     clearMessages();
+    setIsMobileSidebarOpen(false); // Close mobile sidebar when creating new session
   };
 
   const handleSessionDeleted = () => {
@@ -152,54 +155,83 @@ export function ChatInterface() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-900">
+    <div className="flex h-screen bg-gray-900 relative">
+      {/* Mobile Sidebar Overlay */}
+      {isMobileSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
+      
       {/* Session Sidebar */}
-      <SessionSidebar 
-        currentSessionId={currentSessionId || undefined}
-        onSessionSelect={handleSessionSelect}
-        onNewSession={handleNewSession}
-        onSessionDeleted={handleSessionDeleted}
-      />
+      <div className={`
+        ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        lg:translate-x-0 fixed lg:relative z-50 lg:z-auto
+        transition-transform duration-300 ease-in-out
+        w-80 lg:w-80
+      `}>
+        <SessionSidebar 
+          currentSessionId={currentSessionId || undefined}
+          onSessionSelect={handleSessionSelect}
+          onNewSession={handleNewSession}
+          onSessionDeleted={handleSessionDeleted}
+          onClose={() => setIsMobileSidebarOpen(false)}
+        />
+      </div>
       
       {/* Main Chat Area */}
       <div className="flex flex-col flex-1">
         {/* Header */}
-        <div className="border-b border-gray-700 bg-gray-800/90 backdrop-blur-md p-4 shadow-sm">
+        <div className="border-b border-gray-700 bg-gray-800/90 backdrop-blur-md p-3 lg:p-4 shadow-sm">
           <div className="max-w-6xl mx-auto">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-                  <Bot size={20} className="text-white" />
+            <div className="flex items-center justify-between mb-3 lg:mb-4">
+              <div className="flex items-center gap-3 lg:gap-4">
+                {/* Mobile Menu Button */}
+                <button
+                  onClick={() => setIsMobileSidebarOpen(true)}
+                  className="lg:hidden p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+                  aria-label="Open sidebar"
+                >
+                  <Menu size={20} />
+                </button>
+                
+                <div className="w-8 h-8 lg:w-10 lg:h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+                  <Bot size={16} className="text-white lg:hidden" />
+                  <Bot size={20} className="text-white hidden lg:block" />
                 </div>
-                <div>
-                  <h1 className="text-xl font-semibold text-white">
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-lg lg:text-xl font-semibold text-white truncate">
                     Nexa AI Chat
                   </h1>
-                  <p className="text-sm text-gray-400">
-                    Free multi-model AI chatbot with {models.length} free models • Made by <span className="text-blue-400 font-medium">Adnan Tabrezi</span>
+                  <p className="text-xs lg:text-sm text-gray-400 truncate">
+                    <span className="hidden sm:inline">Free multi-model AI chatbot with {models.length} free models • </span>
+                    Made by <span className="text-blue-400 font-medium">Adnan Tabrezi</span>
                   </p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 lg:gap-3">
                 {messages.length > 0 && (
                   <>
                     <button
                       onClick={retryLastMessage}
                       disabled={isLoading}
-                      className="p-2.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded-xl transition-all duration-200 disabled:opacity-50"
+                      className="p-2 lg:p-2.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg lg:rounded-xl transition-all duration-200 disabled:opacity-50"
                       title="Retry last message"
                     >
-                      <RefreshCw size={18} />
+                      <RefreshCw size={16} className="lg:hidden" />
+                      <RefreshCw size={18} className="hidden lg:block" />
                     </button>
                     
                     <button
                       onClick={clearMessages}
                       disabled={isLoading}
-                      className="p-2.5 text-gray-400 hover:text-red-400 hover:bg-gray-700 rounded-xl transition-all duration-200 disabled:opacity-50"
+                      className="p-2 lg:p-2.5 text-gray-400 hover:text-red-400 hover:bg-gray-700 rounded-lg lg:rounded-xl transition-all duration-200 disabled:opacity-50"
                       title="Clear conversation"
                     >
-                      <Trash2 size={18} />
+                      <Trash2 size={16} className="lg:hidden" />
+                      <Trash2 size={18} className="hidden lg:block" />
                     </button>
                   </>
                 )}
@@ -207,14 +239,16 @@ export function ChatInterface() {
             </div>
             
             {/* Model Tabs */}
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-400 font-medium">Select Model:</span>
-              <ModelSelector
-                models={models}
-                currentModel={currentModel}
-                onModelChange={switchModel}
-                disabled={isLoading}
-              />
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+              <span className="text-xs lg:text-sm text-gray-400 font-medium whitespace-nowrap">Select Model:</span>
+              <div className="overflow-x-auto">
+                <ModelSelector
+                  models={models}
+                  currentModel={currentModel}
+                  onModelChange={switchModel}
+                  disabled={isLoading}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -222,29 +256,30 @@ export function ChatInterface() {
         {/* Messages */}
         <div className="flex-1 overflow-y-auto">
           {messages.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center max-w-2xl mx-auto p-8">
-                <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Bot size={28} className="text-white" />
+            <div className="flex items-center justify-center h-full px-4">
+              <div className="text-center max-w-2xl mx-auto p-4 lg:p-8">
+                <div className="w-12 h-12 lg:w-16 lg:h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 lg:mb-6">
+                  <Bot size={20} className="text-white lg:hidden" />
+                  <Bot size={28} className="text-white hidden lg:block" />
                 </div>
-                <h2 className="text-2xl font-semibold text-white mb-4">
+                <h2 className="text-xl lg:text-2xl font-semibold text-white mb-3 lg:mb-4">
                   Welcome to Nexa AI Chat
                 </h2>
-                <p className="text-gray-400 mb-2 text-lg leading-relaxed">
+                <p className="text-gray-400 mb-2 text-base lg:text-lg leading-relaxed">
                   Start a conversation with our free AI models. All models below are available on free tiers!
                 </p>
-                <p className="text-sm text-blue-400 mb-6 font-medium">
+                <p className="text-sm text-blue-400 mb-4 lg:mb-6 font-medium">
                   🚀 Crafted with passion by Adnan Tabrezi
                 </p>
-                <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
-                  <p className="text-sm text-gray-300 mb-4 font-medium">
+                <div className="bg-gray-800 rounded-2xl p-4 lg:p-6 border border-gray-700">
+                  <p className="text-sm text-gray-300 mb-3 lg:mb-4 font-medium">
                     🆓 Free Tier Models ({models.length}):
                   </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {models.slice(0, 6).map((model) => (
                       <div key={model.id} className="flex justify-between items-center p-3 bg-gray-700 rounded-xl">
-                        <span className="text-sm font-medium text-white">{model.name}</span>
-                        <span className={`text-xs px-2 py-1 rounded-full ${
+                        <span className="text-sm font-medium text-white truncate pr-2">{model.name}</span>
+                        <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${
                           model.provider === 'groq' 
                             ? 'bg-purple-600 text-purple-100' 
                             : 'bg-gray-600 text-gray-300'
@@ -263,7 +298,7 @@ export function ChatInterface() {
               </div>
             </div>
           ) : (
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto px-4 lg:px-0">
               {messages.map((message, index) => (
                 <ChatMessage
                   key={message.id}
@@ -278,10 +313,10 @@ export function ChatInterface() {
 
         {/* Error Display */}
         {error && (
-          <div className="border-t border-gray-700 bg-red-900/20 p-4">
-            <div className="max-w-4xl mx-auto flex items-center gap-3 text-red-400">
-              <AlertCircle size={18} />
-              <span className="text-sm font-medium">{error}</span>
+          <div className="border-t border-gray-700 bg-red-900/20 p-3 lg:p-4">
+            <div className="max-w-4xl mx-auto flex items-center gap-3 text-red-400 px-4 lg:px-0">
+              <AlertCircle size={16} className="flex-shrink-0" />
+              <span className="text-sm font-medium break-words">{error}</span>
             </div>
           </div>
         )}

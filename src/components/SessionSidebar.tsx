@@ -22,6 +22,7 @@ interface SessionSidebarProps {
   onSessionSelect: (sessionId: string) => void;
   onNewSession: () => void;
   onSessionDeleted?: () => void;
+  onClose?: () => void;
 }
 
 export const SessionSidebar: React.FC<SessionSidebarProps> = ({
@@ -29,6 +30,7 @@ export const SessionSidebar: React.FC<SessionSidebarProps> = ({
   onSessionSelect,
   onNewSession,
   onSessionDeleted,
+  onClose,
 }) => {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -180,13 +182,25 @@ export const SessionSidebar: React.FC<SessionSidebarProps> = ({
       {/* Header */}
       <div className="p-4 border-b border-gray-700">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-white">Chat Sessions</h2>
-          <button
-            onClick={onNewSession}
-            className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md transition-colors"
-          >
-            New Chat
-          </button>
+          <h2 className="text-lg lg:text-xl font-semibold text-white">Chat Sessions</h2>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onNewSession}
+              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md transition-colors"
+            >
+              New Chat
+            </button>
+            {/* Mobile Close Button */}
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="lg:hidden p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded-md transition-colors"
+                aria-label="Close sidebar"
+              >
+                <X size={18} />
+              </button>
+            )}
+          </div>
         </div>
         
         {/* User info */}

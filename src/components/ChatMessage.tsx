@@ -25,23 +25,24 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
   };
 
   return (
-    <div className={`flex gap-4 p-6 transition-all duration-200 ${
+    <div className={`flex gap-3 lg:gap-4 p-4 lg:p-6 transition-all duration-200 ${
       isUser ? 'flex-row-reverse' : 'flex-row'
     }`}>
       <div className="flex-shrink-0">
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+        <div className={`w-7 h-7 lg:w-8 lg:h-8 rounded-lg flex items-center justify-center ${
           isUser 
             ? 'bg-blue-600 text-white' 
             : 'bg-gray-600 text-white'
         }`}>
-          {isUser ? <User size={16} /> : <Bot size={16} />}
+          {isUser ? <User size={14} className="lg:hidden" /> : <Bot size={14} className="lg:hidden" />}
+          {isUser ? <User size={16} className="hidden lg:block" /> : <Bot size={16} className="hidden lg:block" />}
         </div>
       </div>
       
-      <div className={`flex-1 space-y-2 min-w-0 max-w-[70%] ${
+      <div className={`flex-1 space-y-2 min-w-0 max-w-[85%] lg:max-w-[70%] ${
         isUser ? 'flex flex-col items-end' : 'flex flex-col items-start'
       }`}>
-        <div className={`flex items-center gap-3 flex-wrap ${
+        <div className={`flex items-center gap-2 lg:gap-3 flex-wrap ${
           isUser ? 'flex-row-reverse' : 'flex-row'
         }`}>
           <span className="text-sm font-medium text-white">
@@ -58,7 +59,7 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
         </div>
         
         <div className="max-w-none">
-          <div className={`whitespace-pre-wrap leading-relaxed p-4 rounded-2xl shadow-sm ${
+          <div className={`whitespace-pre-wrap leading-relaxed p-3 lg:p-4 rounded-2xl shadow-sm ${
             isUser 
               ? 'bg-blue-600 text-white rounded-br-md' 
               : 'bg-gray-700 text-white rounded-bl-md'
@@ -66,7 +67,7 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
             isLoading ? 'animate-pulse' : ''
           }`}
             style={{
-              fontSize: '16px',
+              fontSize: '15px',
               lineHeight: '1.6',
               fontWeight: '400'
             }}>
