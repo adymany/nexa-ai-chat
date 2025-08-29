@@ -69,8 +69,8 @@ export async function GET(req: NextRequest) {
       success: false,
       model: modelId,
       provider: modelConfig.provider,
-      error: error.message,
-      details: error
+      error: error instanceof Error ? error.message : 'Unknown error',
+      details: error instanceof Error ? error.message : 'No additional details'
     });
   }
 }
