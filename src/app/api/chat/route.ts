@@ -7,6 +7,7 @@ import { cohere } from '@ai-sdk/cohere';
 import { streamText, generateText } from 'ai';
 import { getModelById } from '@/config/models';
 import { ChatRequest } from '@/types/chat';
+import { createMessage } from '@/lib/database';
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
     }
     
     const body: ChatRequest = await req.json();
-    const { messages, model: modelId, stream = true, temperature = 0.7 } = body;
+    const { messages, model: modelId, stream = true, temperature = 0.7, chatSessionId } = body;
 
     if (!messages || messages.length === 0) {
       return NextResponse.json({ error: 'Messages are required' }, { status: 400 });
@@ -116,6 +117,18 @@ export async function POST(req: NextRequest) {
     }
 
     try {
+      // Save user message to database if chatSessionId is provided
+      if (chatSessionId) {
+        const lastUserMessage = [...messages].reverse().find(msg => msg.role === 'user');
+        if (lastUserMessage) {
+          await createMessage({
+            chatSessionId,
+            role: 'USER',
+            content: lastUserMessage.content,
+          });
+        }
+      }
+
       if (stream) {
         const result = await streamText({
           model,
@@ -129,6 +142,15 @@ export async function POST(req: NextRequest) {
           messages: formattedMessages,
           temperature,
         });
+
+        // Save assistant response to database if chatSessionId is provided
+        if (chatSessionId) {
+          await createMessage({
+            chatSessionId,
+            role: 'ASSISTANT',
+            content: result.text,
+          });
+        }
 
         return NextResponse.json({
           message: {

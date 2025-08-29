@@ -29,6 +29,7 @@ export interface ChatRequest {
   stream?: boolean;
   maxTokens?: number;
   temperature?: number;
+  chatSessionId?: string;
 }
 
 export interface ChatResponse {

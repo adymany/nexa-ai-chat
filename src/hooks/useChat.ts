@@ -49,14 +49,44 @@ export function useChat(initialModel: string = DEFAULT_MODEL) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const sendMessage = useCallback(async (content: string, options?: { model?: string }) => {
+  // Load messages for a specific session
+  const loadSessionMessages = useCallback(async (sessionId: string) => {
+    try {
+      const response = await fetch(`/api/sessions/${sessionId}/messages`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.messages) {
+          const formattedMessages: Message[] = data.messages.map((msg: unknown) => {
+            const message = msg as {
+              id: string;
+              role: string;
+              content: string;
+              createdAt: string;
+              chatSession?: { model: string };
+            };
+            return {
+              id: message.id,
+              role: message.role.toLowerCase() as 'user' | 'assistant' | 'system',
+              content: message.content,
+              timestamp: new Date(message.createdAt),
+              model: message.chatSession?.model,
+            };
+          });
+          setMessages(formattedMessages);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load session messages:', error);
+    }
+  }, []);
+
+  const sendMessage = useCallback(async (content: string, sessionId?: string | null) => {
     const trimmedContent = content.trim();
     if (!trimmedContent) {
       setError('Message cannot be empty');
       return;
     }
 
-    const model = options?.model || currentModel;
     const userMessage = createUserMessage(trimmedContent);
     
     setMessages(prev => [...prev, userMessage]);
@@ -66,8 +96,9 @@ export function useChat(initialModel: string = DEFAULT_MODEL) {
     try {
       const request: ChatRequest = {
         messages: [...messages, userMessage].filter(msg => msg.content && msg.content.trim().length > 0),
-        model,
+        model: currentModel,
         stream: false,
+        chatSessionId: sessionId || undefined,
       };
 
       const response = await chatAPI.sendMessage(request);
@@ -83,7 +114,7 @@ export function useChat(initialModel: string = DEFAULT_MODEL) {
         let assistantContent = '';
         
         // Create assistant message placeholder
-        const assistantMessage = createAssistantMessage('', model);
+        const assistantMessage = createAssistantMessage('', currentModel);
         setMessages(prev => [...prev, assistantMessage]);
 
         while (true) {
@@ -121,7 +152,7 @@ export function useChat(initialModel: string = DEFAULT_MODEL) {
       } else {
         // Non-streaming response handling
         const data = await response.json();
-        const assistantMessage = createAssistantMessage(data.message.content, model);
+        const assistantMessage = createAssistantMessage(data.message.content, currentModel);
         setMessages(prev => [...prev, assistantMessage]);
       }
     } catch (err) {
@@ -164,5 +195,6 @@ export function useChat(initialModel: string = DEFAULT_MODEL) {
     clearMessages,
     switchModel,
     retryLastMessage,
+    loadSessionMessages,
   };
 }

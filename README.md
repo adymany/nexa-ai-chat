@@ -1,8 +1,12 @@
-# Nexa AI Chat
+# 🚀 Nexa AI Chat
+
+**Made with ❤️ by [Adnan Tabrezi](https://github.com/adnantabrezi)**
 
 A modern, **FREE** multi-model AI chatbot built with Next.js that supports multiple AI providers - all using **free tier models** so you can chat without worrying about costs!
 
-## Features
+---
+
+## ✨ Features
 
 - 🆓 **100% Free Models**: All 7 models are available on free tiers
 - 🤖 **Multi-Model Support**: Chat with GPT-3.5, Gemini, Llama, Mixtral, Gemma & Cohere
@@ -161,6 +165,13 @@ src/
 4. Push to branch: `git push origin feature-name`
 5. Submit a pull request
 
-## License
+## 📝 License
 
 MIT License - see LICENSE file for details.
+
+---
+
+<div align="center">
+  <p><strong>Made with ❤️ by <a href="https://github.com/adnantabrezi">Adnan Tabrezi</a></strong></p>
+  <p>If you found this project helpful, please give it a ⭐️!</p>
+</div>

@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// User model for tracking chat sessions and authentication
+model User {
+  id           String    @id @default(cuid())
+  username     String    @unique
+  passwordHash String
+  sessionId    String?   @unique
+  createdAt    DateTime  @default(now())
+  lastActive   DateTime  @default(now())
+  preferences  Json?     @default("{}")
+  
+  // Relations
+  chatSessions ChatSession[]
+  
+  @@map("users")
+}
+
+// Chat session model
+model ChatSession {
+  id          String   @id @default(cuid())
+  userId      String
+  sessionName String   @default("New Chat")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages Message[]
+  
+  @@map("chat_sessions")
+}
+
+// Message model for storing chat history
+model Message {
+  id            String      @id @default(cuid())
+  chatSessionId String
+  role          MessageRole
+  content       String      @db.Text
+  model         String?     // AI model used for this specific message
+  createdAt     DateTime    @default(now())
+  metadata      Json?       @default("{}")
+  
+  // Relations
+  chatSession ChatSession @relation(fields: [chatSessionId], references: [id], onDelete: Cascade)
+  
+  @@map("messages")
+}
+
+// Enum for message roles
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
