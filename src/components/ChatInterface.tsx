@@ -159,7 +159,7 @@ export function ChatInterface() {
       {/* Mobile Sidebar Overlay */}
       {isMobileSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-gray-900 bg-opacity-40 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setIsMobileSidebarOpen(false)}
         />
       )}
@@ -190,7 +190,7 @@ export function ChatInterface() {
                 {/* Mobile Menu Button */}
                 <button
                   onClick={() => setIsMobileSidebarOpen(true)}
-                  className="lg:hidden p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+                  className="lg:hidden p-2.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
                   aria-label="Open sidebar"
                 >
                   <Menu size={20} />
@@ -211,27 +211,27 @@ export function ChatInterface() {
                 </div>
               </div>
               
-              <div className="flex items-center gap-2 lg:gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 {messages.length > 0 && (
                   <>
                     <button
                       onClick={retryLastMessage}
                       disabled={isLoading}
-                      className="p-2 lg:p-2.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg lg:rounded-xl transition-all duration-200 disabled:opacity-50"
+                      className="p-2.5 sm:p-2.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg sm:rounded-xl transition-all duration-200 disabled:opacity-50"
                       title="Retry last message"
                     >
-                      <RefreshCw size={16} className="lg:hidden" />
-                      <RefreshCw size={18} className="hidden lg:block" />
+                      <RefreshCw size={16} className="sm:hidden" />
+                      <RefreshCw size={18} className="hidden sm:block" />
                     </button>
                     
                     <button
                       onClick={clearMessages}
                       disabled={isLoading}
-                      className="p-2 lg:p-2.5 text-gray-400 hover:text-red-400 hover:bg-gray-700 rounded-lg lg:rounded-xl transition-all duration-200 disabled:opacity-50"
+                      className="p-2.5 sm:p-2.5 text-gray-400 hover:text-red-400 hover:bg-gray-700 rounded-lg sm:rounded-xl transition-all duration-200 disabled:opacity-50"
                       title="Clear conversation"
                     >
-                      <Trash2 size={16} className="lg:hidden" />
-                      <Trash2 size={18} className="hidden lg:block" />
+                      <Trash2 size={16} className="sm:hidden" />
+                      <Trash2 size={18} className="hidden sm:block" />
                     </button>
                   </>
                 )}
@@ -256,29 +256,29 @@ export function ChatInterface() {
         {/* Messages */}
         <div className="flex-1 overflow-y-auto">
           {messages.length === 0 ? (
-            <div className="flex items-center justify-center h-full px-4">
-              <div className="text-center max-w-2xl mx-auto p-4 lg:p-8">
-                <div className="w-12 h-12 lg:w-16 lg:h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 lg:mb-6">
-                  <Bot size={20} className="text-white lg:hidden" />
-                  <Bot size={28} className="text-white hidden lg:block" />
+            <div className="flex items-center justify-center h-full px-4 py-8">
+              <div className="text-center max-w-2xl mx-auto p-4 sm:p-6 md:p-8">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <Bot size={20} className="text-white sm:hidden" />
+                  <Bot size={28} className="text-white hidden sm:block" />
                 </div>
-                <h2 className="text-xl lg:text-2xl font-semibold text-white mb-3 lg:mb-4">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-white mb-3 sm:mb-4">
                   Welcome to Nexa AI Chat
                 </h2>
-                <p className="text-gray-400 mb-2 text-base lg:text-lg leading-relaxed">
+                <p className="text-gray-400 mb-2 text-base sm:text-lg md:text-xl leading-relaxed">
                   Start a conversation with our free AI models. All models below are available on free tiers!
                 </p>
-                <p className="text-sm text-blue-400 mb-4 lg:mb-6 font-medium">
+                <p className="text-sm sm:text-base text-blue-400 mb-4 sm:mb-6 font-medium">
                   🚀 Crafted with passion by Adnan Tabrezi
                 </p>
-                <div className="bg-gray-800 rounded-2xl p-4 lg:p-6 border border-gray-700">
-                  <p className="text-sm text-gray-300 mb-3 lg:mb-4 font-medium">
+                <div className="bg-gray-800 rounded-2xl p-4 sm:p-5 md:p-6 border border-gray-700">
+                  <p className="text-sm sm:text-base text-gray-300 mb-3 sm:mb-4 font-medium">
                     🆓 Free Tier Models ({models.length}):
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                     {models.slice(0, 6).map((model) => (
-                      <div key={model.id} className="flex justify-between items-center p-3 bg-gray-700 rounded-xl">
-                        <span className="text-sm font-medium text-white truncate pr-2">{model.name}</span>
+                      <div key={model.id} className="flex justify-between items-center p-2.5 sm:p-3 bg-gray-700 rounded-xl">
+                        <span className="text-xs sm:text-sm font-medium text-white truncate pr-2">{model.name}</span>
                         <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${
                           model.provider === 'groq' 
                             ? 'bg-purple-600 text-purple-100' 
@@ -313,8 +313,8 @@ export function ChatInterface() {
 
         {/* Error Display */}
         {error && (
-          <div className="border-t border-gray-700 bg-red-900/20 p-3 lg:p-4">
-            <div className="max-w-4xl mx-auto flex items-center gap-3 text-red-400 px-4 lg:px-0">
+          <div className="border-t border-gray-700 bg-red-900/20 p-3 sm:p-4">
+            <div className="max-w-4xl mx-auto flex items-center gap-3 text-red-400 px-4 sm:px-0">
               <AlertCircle size={16} className="flex-shrink-0" />
               <span className="text-sm font-medium break-words">{error}</span>
             </div>

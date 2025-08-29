@@ -33,10 +33,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 px-4">
-      <div className="max-w-md w-full space-y-6 lg:space-y-8 p-6 lg:p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-900 px-4 py-8">
+      <div className="max-w-md w-full space-y-6 sm:space-y-8 p-6 sm:p-8">
         <div>
-          <h2 className="text-center text-2xl lg:text-3xl font-extrabold text-white">
+          <h2 className="text-center text-2xl sm:text-3xl font-extrabold text-white">
             Sign in to Nexa AI
           </h2>
           <p className="mt-2 text-center text-sm text-gray-400">
@@ -48,11 +48,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
               create a new account
             </button>
           </p>
-          <p className="mt-3 lg:mt-4 text-center text-xs text-gray-500">
+          <p className="mt-3 sm:mt-4 text-center text-xs text-gray-500">
             Made with ❤️ by <span className="text-blue-400 font-medium">Adnan Tabrezi</span>
           </p>
         </div>
-        <form className="mt-6 lg:mt-8 space-y-4 lg:space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-6 sm:mt-8 space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className="bg-red-500 bg-opacity-20 border border-red-500 text-red-400 px-4 py-3 rounded">
               {error}
@@ -60,7 +60,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
           )}
           
           {/* Test Account Notice */}
-          <div className="bg-blue-500 bg-opacity-20 border border-blue-500 text-blue-300 px-3 lg:px-4 py-3 rounded-lg">
+          <div className="bg-blue-500 bg-opacity-20 border border-blue-500 text-blue-300 px-3 sm:px-4 py-3 rounded-lg">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex-1">
                 <div className="flex items-center space-x-2">
@@ -80,7 +80,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
                   setUsername('admin');
                   setPassword('123456');
                 }}
-                className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs lg:text-sm rounded transition-colors whitespace-nowrap"
+                className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm rounded transition-colors whitespace-nowrap"
               >
                 Auto Fill
               </button>
@@ -99,7 +99,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="relative block w-full px-3 py-3 lg:py-2 bg-gray-800 border border-gray-700 placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base lg:text-sm"
+                className="relative block w-full px-3 py-3 sm:py-2 bg-gray-800 border border-gray-700 placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-sm"
                 placeholder="Username"
                 style={{
                   backgroundColor: '#1f2937',
@@ -120,7 +120,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="relative block w-full px-3 py-3 lg:py-2 bg-gray-800 border border-gray-700 placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base lg:text-sm"
+                className="relative block w-full px-3 py-3 sm:py-2 bg-gray-800 border border-gray-700 placeholder-gray-400 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-sm"
                 placeholder="Password"
                 style={{
                   backgroundColor: '#1f2937',
@@ -135,7 +135,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-3 lg:py-2 px-4 border border-transparent text-base lg:text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="group relative w-full flex justify-center py-3 sm:py-2 px-4 border border-transparent text-base sm:text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? 'Signing in...' : 'Sign in'}
             </button>

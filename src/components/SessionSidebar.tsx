@@ -239,13 +239,13 @@ export const SessionSidebar: React.FC<SessionSidebarProps> = ({
               <div key={session.id} className="relative group mb-2">
                 <button
                   onClick={() => onSessionSelect(session.id)}
-                  className={`w-full text-left p-3 rounded-lg transition-colors ${
+                  className={`w-full text-left p-3 sm:p-3.5 rounded-lg transition-colors ${
                     currentSessionId === session.id
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white'
                   }`}
                 >
-                  <div className="flex flex-col space-y-1 pr-16">
+                  <div className="flex flex-col space-y-1 pr-12">
                     <div className="flex items-center justify-between">
                       {editingSessionId === session.id ? (
                         <input
@@ -264,12 +264,12 @@ export const SessionSidebar: React.FC<SessionSidebarProps> = ({
                           onClick={(e) => e.stopPropagation()}
                         />
                       ) : (
-                        <h3 className="font-medium text-sm">
+                        <h3 className="font-medium text-sm truncate pr-2">
                           {truncateText(session.sessionName)}
                         </h3>
                       )}
                       {editingSessionId !== session.id && (
-                        <span className="text-xs opacity-75">
+                        <span className="text-xs opacity-75 whitespace-nowrap">
                           {formatDate(session.updatedAt)}
                         </span>
                       )}
@@ -296,7 +296,7 @@ export const SessionSidebar: React.FC<SessionSidebarProps> = ({
                           e.stopPropagation();
                           saveEditing(session.id);
                         }}
-                        className="p-1 rounded bg-green-600 hover:bg-green-700 text-white"
+                        className="p-1.5 rounded bg-green-600 hover:bg-green-700 text-white"
                         title="Save"
                       >
                         <Check size={12} />
@@ -306,7 +306,7 @@ export const SessionSidebar: React.FC<SessionSidebarProps> = ({
                           e.stopPropagation();
                           cancelEditing();
                         }}
-                        className="p-1 rounded bg-gray-600 hover:bg-gray-700 text-white"
+                        className="p-1.5 rounded bg-gray-600 hover:bg-gray-700 text-white"
                         title="Cancel"
                       >
                         <X size={12} />
@@ -319,7 +319,7 @@ export const SessionSidebar: React.FC<SessionSidebarProps> = ({
                           e.stopPropagation();
                           startEditing(session.id, session.sessionName);
                         }}
-                        className="p-1 rounded bg-blue-600 hover:bg-blue-700 text-white"
+                        className="p-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white"
                         title="Rename session"
                       >
                         <Edit2 size={12} />
@@ -329,7 +329,7 @@ export const SessionSidebar: React.FC<SessionSidebarProps> = ({
                           e.stopPropagation();
                           setShowDeleteConfirm(session.id);
                         }}
-                        className="p-1 rounded bg-red-600 hover:bg-red-700 text-white"
+                        className="p-1.5 rounded bg-red-600 hover:bg-red-700 text-white"
                         title="Delete session"
                       >
                         <Trash2 size={12} />
@@ -345,10 +345,10 @@ export const SessionSidebar: React.FC<SessionSidebarProps> = ({
       
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-sm mx-4 border border-gray-700">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-lg p-5 max-w-sm w-full mx-4 border border-gray-700">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0">
                 <AlertTriangle size={20} className="text-white" />
               </div>
               <div>
@@ -357,21 +357,21 @@ export const SessionSidebar: React.FC<SessionSidebarProps> = ({
               </div>
             </div>
             
-            <p className="text-gray-300 mb-6">
+            <p className="text-gray-300 mb-6 text-sm">
               Are you sure you want to delete this chat session? All messages will be permanently removed.
             </p>
             
-            <div className="flex space-x-3">
+            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
               <button
                 onClick={() => setShowDeleteConfirm(null)}
-                className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                className="flex-1 px-4 py-2.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors text-sm"
               >
                 Cancel
               </button>
               <button
                 onClick={() => deleteSession(showDeleteConfirm)}
                 disabled={deletingSessionId === showDeleteConfirm}
-                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               >
                 {deletingSessionId === showDeleteConfirm ? 'Deleting...' : 'Delete'}
               </button>
