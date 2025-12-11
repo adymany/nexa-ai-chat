@@ -31,7 +31,7 @@ A modern, **FREE** multi-model AI chatbot built with Next.js that supports multi
 - Gemma 2 9B - Efficient and fast
 
 ### Cohere (Free Tier)
-- Command - Fast for conversations
+- Command R7B (Dec 2024) - Advanced model with improved reasoning
 
 ## Setup
 

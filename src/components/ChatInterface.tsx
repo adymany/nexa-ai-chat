@@ -142,7 +142,7 @@ export function ChatInterface() {
               <div className="ml-4 mt-2 space-y-1 text-xs">
                 <p>- GOOGLE_GENERATIVE_AI_API_KEY (for Gemini)</p>
                 <p>- GROQ_API_KEY (for Llama models)</p>
-                <p>- COHERE_API_KEY (for Command)</p>
+                <p>- COHERE_API_KEY (for Command R7B)</p>
                 <p>- OPENAI_API_KEY (for GPT-3.5)</p>
                 <p>- ANTHROPIC_API_KEY (for Claude)</p>
               </div>

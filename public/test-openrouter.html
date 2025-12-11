@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test OpenRouter</title>
+</head>
+<body>
+    <h1>Test OpenRouter Integration</h1>
+    <button onclick="testOpenRouter()">Test OpenRouter Model</button>
+    <div id="result"></div>
+
+    <script>
+        async function testOpenRouter() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('http://localhost:3002/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        messages: [{ role: 'user', content: 'Hello, this is a test message' }],
+                        model: 'mistralai/mistral-7b-instruct',
+                        stream: false
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<pre>Error: ${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<pre>Network error: ${error.message}</pre>`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -117,46 +117,87 @@ export function useChat(initialModel: string = DEFAULT_MODEL) {
         const assistantMessage = createAssistantMessage('', currentModel);
         setMessages(prev => [...prev, assistantMessage]);
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
 
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split('\n');
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n');
 
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6).trim();
-              if (data === '[DONE]') {
-                break;
-              }
-              
-              try {
-                const parsed = JSON.parse(data);
-                if (parsed.type === 'text-delta') {
-                  assistantContent += parsed.textDelta;
-                  setMessages(prev => 
-                    prev.map(msg => 
-                      msg.id === assistantMessage.id 
-                        ? { ...msg, content: assistantContent }
-                        : msg
-                    )
-                  );
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = line.slice(6).trim();
+                if (data === '[DONE]') {
+                  break;
                 }
-              } catch {
-                // Ignore parsing errors
+                
+                try {
+                  const parsed = JSON.parse(data);
+                  if (parsed.type === 'text-delta') {
+                    assistantContent += parsed.textDelta;
+                    setMessages(prev => 
+                      prev.map(msg => 
+                        msg.id === assistantMessage.id 
+                          ? { ...msg, content: assistantContent }
+                          : msg
+                      )
+                    );
+                  }
+                } catch {
+                  // Ignore parsing errors
+                }
               }
             }
           }
+        } catch (streamError) {
+          // Handle streaming errors
+          let errorMessage = streamError instanceof Error ? streamError.message : 'Streaming error occurred';
+          
+          // Check if this is a quota exhausted error
+          if (errorMessage.includes('quota') || errorMessage.includes('rate limit') || 
+              errorMessage.includes('RESOURCE_EXHAUSTED') || errorMessage.includes('429')) {
+            errorMessage = 'Quota exhausted for this model. Please try again later or switch to a different model.';
+          }
+          // Check if this is a model availability error
+          else if (errorMessage.includes('not available') || errorMessage.includes('not supported') ||
+                   errorMessage.includes('not found') || errorMessage.includes('does not exist')) {
+            errorMessage = 'This model is not currently available. Please try a different model from the model selector.';
+          }
+          
+          setError(errorMessage);
+          // Remove the failed assistant message
+          setMessages(prev => prev.slice(0, -1));
         }
       } else {
         // Non-streaming response handling
         const data = await response.json();
-        const assistantMessage = createAssistantMessage(data.message.content, currentModel);
+        
+        // Check if a fallback model was used
+        if (data.fallbackUsed) {
+          console.info(`Original model failed, fallback to ${data.model} was used.`);
+          // Optionally show a notification to the user about the fallback
+        }
+        
+        const assistantMessage = createAssistantMessage(data.message.content, data.model || currentModel);
         setMessages(prev => [...prev, assistantMessage]);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send message');
+      // Handle different types of errors with user-friendly messages
+      let errorMessage = err instanceof Error ? err.message : 'Failed to send message';
+      
+      // Check if this is a quota exhausted error
+      if (errorMessage.includes('quota') || errorMessage.includes('rate limit') || 
+          errorMessage.includes('RESOURCE_EXHAUSTED') || errorMessage.includes('429')) {
+        errorMessage = 'Quota exhausted for this model. Please try again later or switch to a different model.';
+      } 
+      // Check if this is a model availability error
+      else if (errorMessage.includes('not available') || errorMessage.includes('not supported') ||
+               errorMessage.includes('not found') || errorMessage.includes('does not exist')) {
+        errorMessage = 'This model is not currently available. Please try a different model from the model selector.';
+      }
+      
+      setError(errorMessage);
       // Remove the failed assistant message if no content was received
       setMessages(prev => prev.slice(0, -1));
     } finally {

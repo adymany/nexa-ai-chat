@@ -17,7 +17,7 @@ export interface ChatSession {
 export type AIModel = {
   id: string;
   name: string;
-  provider: 'openai' | 'anthropic' | 'google' | 'groq' | 'cohere';
+  provider: 'openai' | 'anthropic' | 'google' | 'groq' | 'cohere' | 'openrouter';
   maxTokens: number;
   supportsStreaming: boolean;
   description: string;

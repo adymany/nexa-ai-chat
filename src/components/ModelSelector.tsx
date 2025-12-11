@@ -31,7 +31,7 @@ export function ModelSelector({ models, currentModel, onModelChange, disabled = 
       'llama3-8b-8192': 'Llama 3',
       'mixtral-8x7b-32768': 'Mixtral',
       'gemma2-9b-it': 'Gemma 2',
-      'command': 'Command'
+      'command-r7b-12-2024': 'Command R7B'
     };
     return shortNames[model.id] || model.name;
   };

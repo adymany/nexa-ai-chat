@@ -14,7 +14,7 @@ Make sure you have these API keys:
 - **OpenAI API Key** (for GPT-3.5 Turbo)
 - **Google Generative AI API Key** (for Gemini 1.5 Flash)
 - **Groq API Key** (for Llama models)
-- **Cohere API Key** (for Command model)
+- **Cohere API Key** (for Command R7B)
 - **Anthropic API Key** (for Claude - optional)
 
 ## 📂 Step 1: Push to GitHub
@@ -107,7 +107,7 @@ After deployment, add your API keys in the Vercel dashboard:
 | `OPENAI_API_KEY` | OpenAI API key for GPT-3.5 | Yes* |
 | `GOOGLE_GENERATIVE_AI_API_KEY` | Google AI key for Gemini | Yes |
 | `GROQ_API_KEY` | Groq API key for Llama models | Yes |
-| `COHERE_API_KEY` | Cohere API key for Command | Yes |
+| `COHERE_API_KEY` | Cohere API key for Command R7B | Yes |
 | `ANTHROPIC_API_KEY` | Anthropic key for Claude | Optional |
 | `DEFAULT_MODEL` | Default model to use | Optional |
 

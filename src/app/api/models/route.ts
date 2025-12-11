@@ -16,6 +16,8 @@ export async function GET() {
       switch (model.provider) {
         case 'openai':
           return !!process.env.OPENAI_API_KEY;
+        case 'openrouter':
+          return !!process.env.OPENROUTER_API_KEY;
         case 'anthropic':
           return !!process.env.ANTHROPIC_API_KEY;
         case 'google':

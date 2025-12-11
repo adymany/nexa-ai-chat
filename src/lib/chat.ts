@@ -32,7 +32,31 @@ export class ChatAPI {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // Try to parse the error response for more detailed information
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        
+        try {
+          const errorData = await response.json();
+          if (errorData.error) {
+            // Check if this is a quota exhausted error
+            if (errorData.error.includes('quota') || errorData.error.includes('rate limit') || 
+                errorData.error.includes('RESOURCE_EXHAUSTED')) {
+              errorMessage = 'Quota exhausted for this model. Please try again later or switch to a different model.';
+            }
+            // Check if this is a model availability error
+            else if (errorData.error.includes('not available') || errorData.error.includes('not supported') ||
+                     errorData.error.includes('not found') || errorData.error.includes('does not exist')) {
+              errorMessage = 'This model is not currently available. Please try a different model from the model selector.';
+            }
+            else {
+              errorMessage = errorData.error;
+            }
+          }
+        } catch {
+          // If we can't parse the error response, use the default message
+        }
+        
+        throw new Error(errorMessage);
       }
 
       return response;
@@ -86,6 +110,9 @@ export class ChatAPI {
             }
 
             return pump();
+          }).catch((error) => {
+            // Handle errors in the streaming process
+            controller.error(error);
           });
         }
 
