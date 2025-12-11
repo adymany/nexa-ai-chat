@@ -75,7 +75,9 @@ export async function POST(req: NextRequest) {
     }
     
     const body: ChatRequest = await req.json();
-    let { messages, model: modelId, stream = true, temperature = 0.7, chatSessionId } = body;
+    // Keep 'let' for modelId since it's reassigned later, but use 'const' for others
+    const { messages, stream = true, temperature = 0.7, chatSessionId } = body;
+    let { model: modelId } = body;
 
     if (!messages || messages.length === 0) {
       return NextResponse.json({ error: 'Messages are required' }, { status: 400 });
