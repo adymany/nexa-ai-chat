@@ -6,10 +6,6 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['lucide-react'],
     optimizeCss: false,
   },
-  // Disable ESLint during build to avoid build failures
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
 };
 
 export default nextConfig;
