@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Trash2, AlertTriangle, Edit2, Check, X } from 'lucide-react';
+import { Trash2, AlertTriangle, Edit2, Check, X, Menu } from 'lucide-react';
 
 interface ChatSession {
   id: string;
@@ -84,9 +84,9 @@ export const SessionSidebar: React.FC<SessionSidebarProps> = ({
 
       if (response.ok) {
         // Update the session in local state
-        setSessions(prev => 
-          prev.map(s => 
-            s.id === sessionId 
+        setSessions(prev =>
+          prev.map(s =>
+            s.id === sessionId
               ? { ...s, sessionName: newName }
               : s
           )
@@ -135,15 +135,15 @@ export const SessionSidebar: React.FC<SessionSidebarProps> = ({
       if (response.ok) {
         // Remove the session from local state
         setSessions(prev => prev.filter(s => s.id !== sessionId));
-        
+
         // If the deleted session was the current one, clear it
         if (currentSessionId === sessionId) {
           onNewSession();
         }
-        
+
         // Call the optional callback to refresh parent state
         onSessionDeleted?.();
-        
+
         setShowDeleteConfirm(null);
       } else {
         console.error('Failed to delete session');
@@ -180,44 +180,25 @@ export const SessionSidebar: React.FC<SessionSidebarProps> = ({
   return (
     <div className="w-80 bg-gray-800 border-r border-gray-700 flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b border-gray-700">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg lg:text-xl font-semibold text-white">Chat Sessions</h2>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onNewSession}
-              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md transition-colors"
-            >
-              New Chat
-            </button>
-            {/* Mobile Close Button */}
-            {onClose && (
-              <button
-                onClick={onClose}
-                className="lg:hidden p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded-md transition-colors"
-                aria-label="Close sidebar"
-              >
-                <X size={18} />
-              </button>
-            )}
-          </div>
-        </div>
-        
-        {/* User info */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-              <span className="text-white text-sm font-medium">
-                {user?.username?.charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <span className="text-white text-sm">{user?.username}</span>
-          </div>
+      <div className="px-4 py-3 border-b border-gray-700">
+        <div className="flex items-center justify-between h-8">
+          {/* Sidebar Toggle/Close Button */}
           <button
-            onClick={logout}
-            className="text-gray-400 hover:text-white text-sm transition-colors"
+            onClick={(e) => {
+              console.log('SessionSidebar: Close button clicked');
+              onClose?.();
+            }}
+            className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+            title="Close sidebar"
           >
-            Logout
+            <X size={20} />
+          </button>
+
+          <button
+            onClick={onNewSession}
+            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md transition-colors"
+          >
+            New Chat
           </button>
         </div>
       </div>
@@ -239,11 +220,10 @@ export const SessionSidebar: React.FC<SessionSidebarProps> = ({
               <div key={session.id} className="relative group mb-2">
                 <button
                   onClick={() => onSessionSelect(session.id)}
-                  className={`w-full text-left p-3 sm:p-3.5 rounded-lg transition-colors ${
-                    currentSessionId === session.id
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white'
-                  }`}
+                  className={`w-full text-left p-3 sm:p-3.5 rounded-lg transition-colors ${currentSessionId === session.id
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white'
+                    }`}
                 >
                   <div className="flex flex-col space-y-1 pr-12">
                     <div className="flex items-center justify-between">
@@ -274,19 +254,19 @@ export const SessionSidebar: React.FC<SessionSidebarProps> = ({
                         </span>
                       )}
                     </div>
-                    
+
                     {session.lastMessage && (
                       <p className="text-xs opacity-75">
                         {truncateText(session.lastMessage.content, 60)}
                       </p>
                     )}
-                    
+
                     <div className="flex items-center justify-between text-xs opacity-60">
                       <span>{session.messageCount} messages</span>
                     </div>
                   </div>
                 </button>
-                
+
                 {/* Edit and Delete Buttons */}
                 <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   {editingSessionId === session.id ? (
@@ -342,7 +322,7 @@ export const SessionSidebar: React.FC<SessionSidebarProps> = ({
           </div>
         )}
       </div>
-      
+
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -356,11 +336,11 @@ export const SessionSidebar: React.FC<SessionSidebarProps> = ({
                 <p className="text-sm text-gray-400">This action cannot be undone</p>
               </div>
             </div>
-            
+
             <p className="text-gray-300 mb-6 text-sm">
               Are you sure you want to delete this chat session? All messages will be permanently removed.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
               <button
                 onClick={() => setShowDeleteConfirm(null)}

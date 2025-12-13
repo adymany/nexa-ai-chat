@@ -10,7 +10,7 @@ export const AI_MODELS: AIModel[] = [
     supportsStreaming: true,
     description: '🆓 Fast and efficient Gemini model - Free tier'
   },
-  
+
   // Groq Models (Free tier - Super Fast!)
   {
     id: 'llama-3.1-8b-instant',
@@ -36,7 +36,7 @@ export const AI_MODELS: AIModel[] = [
     supportsStreaming: true,
     description: '🆓⚡ Google Gemma 2 9B - Efficient and fast! FREE'
   },
-  
+
   // Cohere Models (Free tier)
   {
     id: 'command-r7b-12-2024',
@@ -46,23 +46,39 @@ export const AI_MODELS: AIModel[] = [
     supportsStreaming: true,
     description: '🆓 Advanced Cohere model with improved reasoning - Free tier'
   },
-  
-  // OpenRouter Models
+
+  // OpenRouter Models (Free tier)
   {
-    id: 'openrouter/auto',
-    name: 'OpenRouter Auto',
+    id: 'google/gemini-2.0-flash-exp',
+    name: 'Gemini 2.0 Flash Exp',
     provider: 'openrouter',
-    maxTokens: 8192,
+    maxTokens: 1000000,
     supportsStreaming: true,
-    description: '🧠 Smart routing to best available model through OpenRouter'
+    description: '🆓 Google Gemini 2.0 Flash Experimental - FREE via OpenRouter'
   },
   {
-    id: 'mistralai/mistral-7b-instruct',
-    name: 'Mistral 7B Instruct',
+    id: 'meta-llama/llama-4-maverick',
+    name: 'Llama 4 Maverick',
     provider: 'openrouter',
-    maxTokens: 8192,
+    maxTokens: 128000,
     supportsStreaming: true,
-    description: '🧠 Mistral 7B Instruct model through OpenRouter'
+    description: '🆓 Meta Llama 4 Maverick - Latest Llama model - FREE'
+  },
+  {
+    id: 'deepseek/deepseek-chat-v3-0324',
+    name: 'DeepSeek V3',
+    provider: 'openrouter',
+    maxTokens: 64000,
+    supportsStreaming: true,
+    description: '🆓 DeepSeek V3 - Advanced reasoning and coding - FREE'
+  },
+  {
+    id: 'mistralai/mistral-small-3.1-24b-instruct',
+    name: 'Mistral Small 3.1 24B',
+    provider: 'openrouter',
+    maxTokens: 96000,
+    supportsStreaming: true,
+    description: '🆓 Mistral Small 3.1 24B - Efficient and powerful - FREE'
   }
 ];
 
@@ -74,4 +90,4 @@ export const getModelsByProvider = (provider: string): AIModel[] => {
   return AI_MODELS.filter(model => model.provider === provider);
 };
 
-export const DEFAULT_MODEL = process.env.DEFAULT_MODEL || 'gemini-2.5-flash';
+export const DEFAULT_MODEL = process.env.DEFAULT_MODEL || 'deepseek/deepseek-chat-v3-0324';

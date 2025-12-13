@@ -13,7 +13,12 @@ export function ChatInput({ onSendMessage, disabled = false, placeholder = "Type
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleSubmit = () => {
+  // Log rendering to debug hydration/render issues
+  console.log('ChatInput: Rendering', { disabled, messageLength: message?.length });
+
+  const handleSubmit = (e?: React.MouseEvent | React.KeyboardEvent) => {
+    if (e) e.preventDefault();
+    console.log('ChatInput: handleSubmit called', { message, disabled });
     const trimmedMessage = message.trim();
     if (trimmedMessage && !disabled && trimmedMessage.length > 0) {
       onSendMessage(trimmedMessage);
@@ -27,73 +32,61 @@ export function ChatInput({ onSendMessage, disabled = false, placeholder = "Type
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit();
+      handleSubmit(e);
+    }
+  };
+
+  const handleButtonKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleSubmit(e);
     }
   };
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(e.target.value);
-    
+
     // Auto-resize textarea
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 150)}px`;
     }
   };
 
   return (
-    <div className="border-t border-gray-700 bg-gray-800 p-3 sm:p-4">
-      <div className="max-w-4xl mx-auto px-4 sm:px-0">
-        <div className="flex gap-3 items-end">
-          <div className="flex-1 relative">
-            <textarea
-              ref={textareaRef}
-              value={message}
-              onChange={handleInput}
-              onKeyDown={handleKeyDown}
-              placeholder={placeholder}
-              disabled={disabled}
-              rows={1}
-              style={{ 
-                width: '100%',
-                minHeight: '44px',
-                maxHeight: '128px',
-                padding: '12px 44px 12px 12px',
-                fontSize: '16px',
-                lineHeight: '1.5',
-                color: '#ffffff',
-                backgroundColor: '#374151',
-                border: '1px solid #4b5563',
-                borderRadius: '12px',
-                resize: 'none',
-                outline: 'none',
-                overflow: 'auto',
-                transition: 'all 0.2s ease'
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = '#3b82f6';
-                e.target.style.backgroundColor = '#4b5563';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = '#4b5563';
-                e.target.style.backgroundColor = '#374151';
-              }}
-            />
-            <button
-              onClick={handleSubmit}
-              disabled={disabled || !message.trim()}
-              className="absolute right-2 bottom-2 p-2 sm:p-2.5 text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:text-gray-400 rounded-lg sm:rounded-xl transition-all duration-200 disabled:cursor-not-allowed"
-              title="Send message (Enter)"
-            >
-              {disabled ? <Square size={16} className="sm:hidden" /> : <Send size={16} className="sm:hidden" />}
-              {disabled ? <Square size={18} className="hidden sm:block" /> : <Send size={18} className="hidden sm:block" />}
-            </button>
-          </div>
+    <div className="w-full max-w-5xl mx-auto p-2 sm:p-0">
+      <div className="relative bg-gray-800 rounded-2xl border border-gray-700 shadow-2xl overflow-hidden">
+        <textarea
+          ref={textareaRef}
+          value={message}
+          onChange={handleInput}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          disabled={disabled}
+          rows={1}
+          className="w-full p-4 pr-14 bg-transparent text-white placeholder-gray-500 resize-none focus:outline-none text-[15px] leading-relaxed"
+          style={{
+            minHeight: '52px',
+            maxHeight: '150px',
+          }}
+        />
+        <div
+          role="button"
+          tabIndex={disabled || !message.trim() ? -1 : 0}
+          onClick={handleSubmit}
+          onKeyDown={handleButtonKeyDown}
+          className={`absolute right-3 bottom-3 p-2.5 text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all duration-200 flex items-center justify-center ${disabled || !message.trim()
+            ? 'bg-gray-700 text-gray-500 cursor-not-allowed pointer-events-none'
+            : 'cursor-pointer'
+            }`}
+          title="Send message (Enter)"
+        >
+          {disabled ? <Square size={18} /> : <Send size={18} />}
         </div>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-2 sm:mt-3 text-xs gap-2 sm:gap-0">
-          <span className="text-gray-400 font-medium">Press Enter to send, Shift+Enter for new line</span>
-          <span className="text-gray-500">{message.length} characters</span>
-        </div>
+      </div>
+      {/* Help text - visible on mobile only */}
+      <div className="flex items-center justify-center mt-2 text-xs text-gray-600 sm:hidden">
+        <span>Press Enter to send • Shift+Enter for new line</span>
       </div>
     </div>
   );

@@ -40,8 +40,10 @@ const FALLBACK_MODELS: Record<string, string[]> = {
     'gemini-1.5-pro'
   ],
   'openrouter': [
-    'openrouter/auto',
-    'mistralai/mistral-7b-instruct'
+    'google/gemini-2.0-flash-exp',
+    'meta-llama/llama-4-maverick',
+    'deepseek/deepseek-chat-v3-0324',
+    'mistralai/mistral-small-3.1-24b-instruct'
   ],
   'cohere': [
     'command-r7b-12-2024'
@@ -58,7 +60,7 @@ const FALLBACK_MODELS: Record<string, string[]> = {
 function getFallbackModel(provider: string, currentModel: string): string | null {
   const fallbacks = FALLBACK_MODELS[provider];
   if (!fallbacks) return null;
-  
+
   // Return the first available fallback model that's not the current model
   const fallback = fallbacks.find(model => model !== currentModel);
   return fallback || null;
@@ -73,7 +75,7 @@ export async function POST(req: NextRequest) {
     if (process.env.GOOGLE_API_KEY && !process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
       process.env.GOOGLE_GENERATIVE_AI_API_KEY = process.env.GOOGLE_API_KEY;
     }
-    
+
     const body: ChatRequest = await req.json();
     // Keep 'let' for modelId since it's reassigned later, but use 'const' for others
     const { messages, stream = true, temperature = 0.7, chatSessionId } = body;
@@ -89,8 +91,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Simple message formatting - just take the last user message for problematic providers
-    let formattedMessages: Array<{role: 'user' | 'assistant' | 'system', content: string}>;
-    
+    let formattedMessages: Array<{ role: 'user' | 'assistant' | 'system', content: string }>;
+
     if (modelConfig.provider === 'cohere' || modelConfig.provider === 'openrouter') {
       // Cohere and OpenRouter are very picky - just send the last user message
       const lastUserMessage = [...messages].reverse().find(msg => msg.role === 'user' && msg.content.trim());
@@ -116,22 +118,22 @@ export async function POST(req: NextRequest) {
     }
 
     let model;
-    
+
     // Select the appropriate provider
     switch (modelConfig.provider) {
       case 'openai':
         if (!process.env.OPENAI_API_KEY) {
-          return NextResponse.json({ 
+          return NextResponse.json({
             error: 'OpenAI API key not configured. Please add OPENAI_API_KEY to your environment variables, or use a different model like Gemini or Groq.',
             suggestion: 'Try switching to Gemini 1.5 Flash or one of the Groq models which are available.'
           }, { status: 500 });
         }
         model = openai(modelId);
         break;
-        
+
       case 'openrouter':
         if (!process.env.OPENROUTER_API_KEY) {
-          return NextResponse.json({ 
+          return NextResponse.json({
             error: 'OpenRouter API key not configured. Please add OPENROUTER_API_KEY to your environment variables.',
             suggestion: 'Add your OpenRouter API key to use models through OpenRouter.'
           }, { status: 500 });
@@ -147,47 +149,47 @@ export async function POST(req: NextRequest) {
         });
         model = openRouter(modelId);
         break;
-        
+
       case 'anthropic':
         if (!process.env.ANTHROPIC_API_KEY) {
-          return NextResponse.json({ 
+          return NextResponse.json({
             error: 'Anthropic API key not configured. Please add ANTHROPIC_API_KEY to your environment variables, or use a different model.',
             suggestion: 'Try switching to Gemini 1.5 Flash or one of the Groq models which are available.'
           }, { status: 500 });
         }
         model = anthropic(modelId);
         break;
-        
+
       case 'google':
         if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY && !process.env.GEMINI_API_KEY && !process.env.GOOGLE_API_KEY) {
-          return NextResponse.json({ 
+          return NextResponse.json({
             error: 'Google API key not configured. Please add GOOGLE_GENERATIVE_AI_API_KEY to your environment variables.',
             suggestion: 'Add your Google AI API key to use Gemini models.'
           }, { status: 500 });
         }
         model = google(modelId);
         break;
-        
+
       case 'groq':
         if (!process.env.GROQ_API_KEY) {
-          return NextResponse.json({ 
+          return NextResponse.json({
             error: 'Groq API key not configured. Please add GROQ_API_KEY to your environment variables.',
             suggestion: 'Add your Groq API key to use lightning-fast Llama models.'
           }, { status: 500 });
         }
         model = groq(modelId);
         break;
-        
+
       case 'cohere':
         if (!process.env.COHERE_API_KEY) {
-          return NextResponse.json({ 
+          return NextResponse.json({
             error: 'Cohere API key not configured. Please add COHERE_API_KEY to your environment variables.',
             suggestion: 'Add your Cohere API key to use the Command R7B model.'
           }, { status: 500 });
         }
         model = cohere(modelId);
         break;
-        
+
       default:
         return NextResponse.json({ error: 'Unsupported model provider' }, { status: 400 });
     }
@@ -200,7 +202,7 @@ export async function POST(req: NextRequest) {
           const chatSession = await prisma.chatSession.findUnique({
             where: { id: chatSessionId.trim() }
           });
-          
+
           if (!chatSession) {
             // Don't fail the entire request if the session ID is invalid
             // Just log the error and continue without saving messages
@@ -254,7 +256,7 @@ export async function POST(req: NextRequest) {
             const chatSession = await prisma.chatSession.findUnique({
               where: { id: chatSessionId.trim() }
             });
-            
+
             if (chatSession) {
               // Only save if the session is valid
               try {
@@ -289,20 +291,20 @@ export async function POST(req: NextRequest) {
       }
     } catch (error: unknown) {
       console.error(`${modelConfig.provider} error for model ${modelId}:`, error);
-      
+
       // Check if this is a model availability error and try fallback
-      if (error instanceof Error && 
-          (error.message.includes('not available') || error.message.includes('not supported') ||
-           error.message.includes('not found') || error.message.includes('does not exist') ||
-           error.message.includes('decommissioned'))) {
-        
+      if (error instanceof Error &&
+        (error.message.includes('not available') || error.message.includes('not supported') ||
+          error.message.includes('not found') || error.message.includes('does not exist') ||
+          error.message.includes('decommissioned'))) {
+
         // Try to get a fallback model
         const fallbackModelId = getFallbackModel(modelConfig.provider, modelId);
         if (fallbackModelId) {
           // Update modelId and modelConfig to use fallback
           modelId = fallbackModelId;
           modelConfig = getModelById(modelId)!; // We know it exists since it's in our fallback list
-          
+
           // Try to create a new model instance with the fallback model
           try {
             switch (modelConfig.provider) {
@@ -336,7 +338,7 @@ export async function POST(req: NextRequest) {
               default:
                 throw new Error('Fallback not supported for this provider');
             }
-            
+
             // Retry the request with the fallback model
             if (stream) {
               const result = await streamText({
@@ -378,22 +380,22 @@ export async function POST(req: NextRequest) {
           }
         }
       }
-      
+
       // Provide more specific error messages
       let errorMessage = 'Unknown error';
       let errorStatus = 500;
-      
+
       if (error instanceof Error && error.message) {
         if (error.message.includes('API key')) {
           errorMessage = `${modelConfig.provider} API key is invalid or missing`;
           errorStatus = 500;
-        } else if (error.message.includes('quota') || error.message.includes('limit') || 
-                   (error instanceof Object && 'statusCode' in error && error.statusCode === 429)) {
+        } else if (error.message.includes('quota') || error.message.includes('limit') ||
+          (error instanceof Object && 'statusCode' in error && error.statusCode === 429)) {
           errorMessage = `${modelConfig.provider} quota or rate limit exceeded. Please try again later or switch to a different model.`;
           errorStatus = 429;
         } else if (error.message.includes('not available') || error.message.includes('not supported') ||
-                   error.message.includes('not found') || error.message.includes('does not exist') ||
-                   error.message.includes('decommissioned')) {
+          error.message.includes('not found') || error.message.includes('does not exist') ||
+          error.message.includes('decommissioned')) {
           errorMessage = `Model ${modelId} is not available or has been decommissioned. Please try a different model.`;
           errorStatus = 400;
         } else {
@@ -401,7 +403,7 @@ export async function POST(req: NextRequest) {
           errorStatus = 500;
         }
       }
-      
+
       // Handle AI SDK specific errors
       if (error && typeof error === 'object' && 'lastError' in error) {
         const lastError = error.lastError as any;
@@ -420,9 +422,9 @@ export async function POST(req: NextRequest) {
           }
         }
       }
-      
+
       return NextResponse.json(
-        { 
+        {
           error: `${modelConfig.provider} error: ${errorMessage}`,
           provider: modelConfig.provider,
           model: modelId,

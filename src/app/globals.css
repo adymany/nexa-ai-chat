@@ -86,30 +86,7 @@ body {
 
 /* Ensure text inputs are always visible */
 input, textarea {
-  color: inherit !important;
+  color: inherit;
 }
 
-input[type="text"], textarea {
-  background-color: white !important;
-  color: #1f2937 !important;
-}
-
-@media (prefers-color-scheme: dark) {
-  input[type="text"], textarea {
-    background-color: #1f2937 !important;
-    color: #f9fafb !important;
-  }
-}
-
-/* Force text visibility in chat input */
-.chat-input {
-  color: #1f2937 !important;
-  background-color: white !important;
-}
-
-@media (prefers-color-scheme: dark) {
-  .chat-input {
-    color: #f9fafb !important;
-    background-color: #1f2937 !important;
-  }
-}
+/* Force text visibility in chat input - removed white background to allow component-level styling */

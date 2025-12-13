@@ -88,7 +88,7 @@ export function useChat(initialModel: string = DEFAULT_MODEL) {
     }
 
     const userMessage = createUserMessage(trimmedContent);
-    
+
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
     setError(null);
@@ -102,7 +102,7 @@ export function useChat(initialModel: string = DEFAULT_MODEL) {
       };
 
       const response = await chatAPI.sendMessage(request);
-      
+
       if (request.stream) {
         // Streaming response handling
         if (!response.body) {
@@ -112,7 +112,7 @@ export function useChat(initialModel: string = DEFAULT_MODEL) {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let assistantContent = '';
-        
+
         // Create assistant message placeholder
         const assistantMessage = createAssistantMessage('', currentModel);
         setMessages(prev => [...prev, assistantMessage]);
@@ -131,14 +131,14 @@ export function useChat(initialModel: string = DEFAULT_MODEL) {
                 if (data === '[DONE]') {
                   break;
                 }
-                
+
                 try {
                   const parsed = JSON.parse(data);
                   if (parsed.type === 'text-delta') {
                     assistantContent += parsed.textDelta;
-                    setMessages(prev => 
-                      prev.map(msg => 
-                        msg.id === assistantMessage.id 
+                    setMessages(prev =>
+                      prev.map(msg =>
+                        msg.id === assistantMessage.id
                           ? { ...msg, content: assistantContent }
                           : msg
                       )
@@ -153,18 +153,18 @@ export function useChat(initialModel: string = DEFAULT_MODEL) {
         } catch (streamError) {
           // Handle streaming errors
           let errorMessage = streamError instanceof Error ? streamError.message : 'Streaming error occurred';
-          
+
           // Check if this is a quota exhausted error
-          if (errorMessage.includes('quota') || errorMessage.includes('rate limit') || 
-              errorMessage.includes('RESOURCE_EXHAUSTED') || errorMessage.includes('429')) {
+          if (errorMessage.includes('quota') || errorMessage.includes('rate limit') ||
+            errorMessage.includes('RESOURCE_EXHAUSTED') || errorMessage.includes('429')) {
             errorMessage = 'Quota exhausted for this model. Please try again later or switch to a different model.';
           }
           // Check if this is a model availability error
           else if (errorMessage.includes('not available') || errorMessage.includes('not supported') ||
-                   errorMessage.includes('not found') || errorMessage.includes('does not exist')) {
+            errorMessage.includes('not found') || errorMessage.includes('does not exist')) {
             errorMessage = 'This model is not currently available. Please try a different model from the model selector.';
           }
-          
+
           setError(errorMessage);
           // Remove the failed assistant message
           setMessages(prev => prev.slice(0, -1));
@@ -172,31 +172,49 @@ export function useChat(initialModel: string = DEFAULT_MODEL) {
       } else {
         // Non-streaming response handling
         const data = await response.json();
-        
+
         // Check if a fallback model was used
         if (data.fallbackUsed) {
           console.info(`Original model failed, fallback to ${data.model} was used.`);
           // Optionally show a notification to the user about the fallback
         }
-        
+
         const assistantMessage = createAssistantMessage(data.message.content, data.model || currentModel);
         setMessages(prev => [...prev, assistantMessage]);
+
+        // Backup save: Try to save the assistant message from frontend
+        // This ensures the message is saved even if backend save failed
+        if (sessionId) {
+          try {
+            await fetch('/api/messages/save', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chatSessionId: sessionId,
+                role: 'ASSISTANT',
+                content: data.message.content,
+              }),
+            });
+          } catch (saveError) {
+            console.error('Backup message save failed:', saveError);
+          }
+        }
       }
     } catch (err) {
       // Handle different types of errors with user-friendly messages
       let errorMessage = err instanceof Error ? err.message : 'Failed to send message';
-      
+
       // Check if this is a quota exhausted error
-      if (errorMessage.includes('quota') || errorMessage.includes('rate limit') || 
-          errorMessage.includes('RESOURCE_EXHAUSTED') || errorMessage.includes('429')) {
+      if (errorMessage.includes('quota') || errorMessage.includes('rate limit') ||
+        errorMessage.includes('RESOURCE_EXHAUSTED') || errorMessage.includes('429')) {
         errorMessage = 'Quota exhausted for this model. Please try again later or switch to a different model.';
-      } 
+      }
       // Check if this is a model availability error
       else if (errorMessage.includes('not available') || errorMessage.includes('not supported') ||
-               errorMessage.includes('not found') || errorMessage.includes('does not exist')) {
+        errorMessage.includes('not found') || errorMessage.includes('does not exist')) {
         errorMessage = 'This model is not currently available. Please try a different model from the model selector.';
       }
-      
+
       setError(errorMessage);
       // Remove the failed assistant message if no content was received
       setMessages(prev => prev.slice(0, -1));
@@ -216,14 +234,14 @@ export function useChat(initialModel: string = DEFAULT_MODEL) {
 
   const retryLastMessage = useCallback(async () => {
     if (messages.length === 0) return;
-    
+
     const lastUserMessage = [...messages].reverse().find(msg => msg.role === 'user');
     if (!lastUserMessage) return;
 
     // Remove assistant messages after the last user message
     const lastUserIndex = messages.findLastIndex(msg => msg.id === lastUserMessage.id);
     setMessages(messages.slice(0, lastUserIndex + 1));
-    
+
     await sendMessage(lastUserMessage.content);
   }, [messages, sendMessage]);
 
