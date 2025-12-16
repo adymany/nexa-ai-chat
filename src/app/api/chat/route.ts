@@ -93,6 +93,12 @@ export async function POST(req: NextRequest) {
     // Simple message formatting - just take the last user message for problematic providers
     let formattedMessages: Array<{ role: 'user' | 'assistant' | 'system', content: string }>;
 
+    // Helper to truncate content to max characters
+    const truncateContent = (content: string, maxChars: number = 3000): string => {
+      if (content.length <= maxChars) return content;
+      return content.slice(0, maxChars) + '... [truncated]';
+    };
+
     if (modelConfig.provider === 'cohere' || modelConfig.provider === 'openrouter') {
       // Cohere and OpenRouter are very picky - just send the last user message
       const lastUserMessage = [...messages].reverse().find(msg => msg.role === 'user' && msg.content.trim());
@@ -101,15 +107,25 @@ export async function POST(req: NextRequest) {
       }
       formattedMessages = [{
         role: 'user' as const,
-        content: lastUserMessage.content.trim()
+        content: truncateContent(lastUserMessage.content.trim(), 4000)
       }];
-    } else {
-      // For other providers, filter and clean messages
-      formattedMessages = messages
+    } else if (modelConfig.provider === 'groq') {
+      // Groq has strict token limits - limit context heavily
+      const recentMessages = messages.slice(-5); // Only last 5 messages
+      formattedMessages = recentMessages
         .filter((msg: any) => msg.content && msg.content.trim().length > 0)
         .map((msg: any) => ({
           role: (msg.role === 'system' ? 'user' : msg.role) as 'user' | 'assistant' | 'system',
-          content: msg.content.trim(),
+          content: truncateContent(msg.content.trim(), 2000), // Limit each message to 2000 chars
+        }));
+    } else {
+      // For other providers, filter and clean messages
+      formattedMessages = messages
+        .slice(-10) // Limit to last 10 messages
+        .filter((msg: any) => msg.content && msg.content.trim().length > 0)
+        .map((msg: any) => ({
+          role: (msg.role === 'system' ? 'user' : msg.role) as 'user' | 'assistant' | 'system',
+          content: truncateContent(msg.content.trim()),
         }));
     }
 

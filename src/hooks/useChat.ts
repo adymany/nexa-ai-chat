@@ -94,10 +94,14 @@ export function useChat(initialModel: string = DEFAULT_MODEL) {
     setError(null);
 
     try {
+      // Limit context to last 10 messages to prevent token overflow
+      const allMessages = [...messages, userMessage].filter(msg => msg.content && msg.content.trim().length > 0);
+      const recentMessages = allMessages.slice(-10); // Keep only last 10 messages
+
       const request: ChatRequest = {
-        messages: [...messages, userMessage].filter(msg => msg.content && msg.content.trim().length > 0),
+        messages: recentMessages,
         model: currentModel,
-        stream: false,
+        stream: true, // Enable streaming for faster perceived response
         chatSessionId: sessionId || undefined,
       };
 
@@ -123,32 +127,17 @@ export function useChat(initialModel: string = DEFAULT_MODEL) {
             if (done) break;
 
             const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split('\n');
 
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                const data = line.slice(6).trim();
-                if (data === '[DONE]') {
-                  break;
-                }
-
-                try {
-                  const parsed = JSON.parse(data);
-                  if (parsed.type === 'text-delta') {
-                    assistantContent += parsed.textDelta;
-                    setMessages(prev =>
-                      prev.map(msg =>
-                        msg.id === assistantMessage.id
-                          ? { ...msg, content: assistantContent }
-                          : msg
-                      )
-                    );
-                  }
-                } catch {
-                  // Ignore parsing errors
-                }
-              }
-            }
+            // Vercel AI SDK sends plain text chunks directly
+            // Just append the chunk to the content
+            assistantContent += chunk;
+            setMessages(prev =>
+              prev.map(msg =>
+                msg.id === assistantMessage.id
+                  ? { ...msg, content: assistantContent }
+                  : msg
+              )
+            );
           }
         } catch (streamError) {
           // Handle streaming errors
@@ -166,8 +155,10 @@ export function useChat(initialModel: string = DEFAULT_MODEL) {
           }
 
           setError(errorMessage);
-          // Remove the failed assistant message
-          setMessages(prev => prev.slice(0, -1));
+          // Remove the failed assistant message if no content was received
+          if (!assistantContent) {
+            setMessages(prev => prev.slice(0, -1));
+          }
         }
       } else {
         // Non-streaming response handling
@@ -181,24 +172,6 @@ export function useChat(initialModel: string = DEFAULT_MODEL) {
 
         const assistantMessage = createAssistantMessage(data.message.content, data.model || currentModel);
         setMessages(prev => [...prev, assistantMessage]);
-
-        // Backup save: Try to save the assistant message from frontend
-        // This ensures the message is saved even if backend save failed
-        if (sessionId) {
-          try {
-            await fetch('/api/messages/save', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                chatSessionId: sessionId,
-                role: 'ASSISTANT',
-                content: data.message.content,
-              }),
-            });
-          } catch (saveError) {
-            console.error('Backup message save failed:', saveError);
-          }
-        }
       }
     } catch (err) {
       // Handle different types of errors with user-friendly messages

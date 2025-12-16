@@ -1,19 +1,34 @@
 'use client';
 
-import { useState } from 'react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import React, { useState, useCallback, memo, Suspense, lazy } from 'react';
 import { Copy, Check } from 'lucide-react';
+
+// Lazy load the heavy SyntaxHighlighter
+const SyntaxHighlighter = lazy(() =>
+    import('react-syntax-highlighter').then(mod => ({ default: mod.Prism }))
+);
+
+// Import style separately
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 interface CodeBlockProps {
     language?: string;
     children: string;
 }
 
-export function CodeBlock({ language, children }: CodeBlockProps) {
+// Simple code fallback while SyntaxHighlighter loads
+function CodeFallback({ children }: { children: string }) {
+    return (
+        <pre className="p-4 bg-[#1a1a1a] text-gray-300 font-mono text-sm overflow-x-auto">
+            <code>{children}</code>
+        </pre>
+    );
+}
+
+function CodeBlockComponent({ language, children }: CodeBlockProps) {
     const [copied, setCopied] = useState(false);
 
-    const copyToClipboard = async () => {
+    const copyToClipboard = useCallback(async () => {
         try {
             await navigator.clipboard.writeText(children);
             setCopied(true);
@@ -21,7 +36,7 @@ export function CodeBlock({ language, children }: CodeBlockProps) {
         } catch (err) {
             console.error('Failed to copy code:', err);
         }
-    };
+    }, [children]);
 
     // Detect language from common patterns if not provided
     const detectLanguage = (code: string): string => {
@@ -65,34 +80,41 @@ export function CodeBlock({ language, children }: CodeBlockProps) {
                 </div>
             </div>
 
-            {/* Code content */}
+            {/* Code content with lazy loaded highlighter */}
             <div className="overflow-x-auto">
-                <SyntaxHighlighter
-                    language={detectedLanguage}
-                    style={oneDark}
-                    customStyle={{
-                        margin: 0,
-                        padding: '1rem 1.25rem',
-                        background: '#1a1a1a',
-                        fontSize: '0.875rem',
-                        lineHeight: '1.6',
-                    }}
-                    showLineNumbers={false}
-                    wrapLines={false}
-                    codeTagProps={{
-                        style: {
-                            background: 'transparent',
-                        }
-                    }}
-                    PreTag={({ children, ...props }) => (
-                        <pre {...props} style={{ ...props.style, background: 'transparent' }}>
-                            {children}
-                        </pre>
-                    )}
-                >
-                    {children}
-                </SyntaxHighlighter>
+                <Suspense fallback={<CodeFallback>{children}</CodeFallback>}>
+                    <SyntaxHighlighter
+                        language={detectedLanguage}
+                        style={oneDark}
+                        customStyle={{
+                            margin: 0,
+                            padding: '1rem 1.25rem',
+                            background: '#1a1a1a',
+                            fontSize: '0.875rem',
+                            lineHeight: '1.6',
+                        }}
+                        showLineNumbers={false}
+                        wrapLines={false}
+                        codeTagProps={{
+                            style: {
+                                background: 'transparent',
+                            }
+                        }}
+                        PreTag={({ children: preChildren, ...props }: { children: React.ReactNode; style?: React.CSSProperties }) => (
+                            <pre {...props} style={{ ...props.style, background: 'transparent' }}>
+                                {preChildren}
+                            </pre>
+                        )}
+                    >
+                        {children}
+                    </SyntaxHighlighter>
+                </Suspense>
             </div>
         </div>
     );
 }
+
+// Memoize to prevent re-renders when code content hasn't changed
+export const CodeBlock = memo(CodeBlockComponent, (prevProps, nextProps) => {
+    return prevProps.children === nextProps.children && prevProps.language === nextProps.language;
+});

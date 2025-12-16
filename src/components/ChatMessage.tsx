@@ -1,8 +1,8 @@
 'use client';
 
 import { Message } from '@/types/chat';
-import { User, Bot, Copy, Check } from 'lucide-react';
-import { useState } from 'react';
+import { User, Copy, Check } from 'lucide-react';
+import { useState, useCallback, memo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { CodeBlock } from './CodeBlock';
 
@@ -11,12 +11,12 @@ interface ChatMessageProps {
   isLoading?: boolean;
 }
 
-export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
+function ChatMessageComponent({ message, isLoading = false }: ChatMessageProps) {
   const [copied, setCopied] = useState(false);
   const isUser = message.role === 'user';
   const isAssistant = message.role === 'assistant';
 
-  const copyToClipboard = async () => {
+  const copyToClipboard = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(message.content);
       setCopied(true);
@@ -24,7 +24,7 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
     } catch (err) {
       console.error('Failed to copy text:', err);
     }
-  };
+  }, [message.content]);
 
   return (
     <div className={`flex gap-3 lg:gap-4 p-4 lg:p-6 transition-all duration-200 ${isUser ? 'flex-row-reverse justify-start' : 'flex-row'
@@ -53,7 +53,7 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
 
         <div className={isUser ? "inline-block" : "w-full"}>
           {isUser ? (
-            // User messages in a bubble
+            // User messages in a bubble - also render markdown
             <div
               className="leading-relaxed px-4 py-3 rounded-2xl rounded-br-md bg-gray-700 text-white shadow-sm"
               style={{
@@ -62,7 +62,65 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
                 fontWeight: '400'
               }}
             >
-              <div className="whitespace-pre-wrap">{message.content}</div>
+              <div className="prose prose-invert prose-sm max-w-none">
+                <ReactMarkdown
+                  components={{
+                    code({ className, children, ...props }) {
+                      const match = /language-(\w+)/.exec(className || '');
+                      const isInline = !match && !String(children).includes('\n');
+
+                      if (isInline) {
+                        return (
+                          <code
+                            className="bg-emerald-900/60 text-emerald-300 px-1.5 py-0.5 rounded text-sm font-mono border border-emerald-700/50"
+                            {...props}
+                          >
+                            {children}
+                          </code>
+                        );
+                      }
+
+                      return (
+                        <CodeBlock language={match?.[1]}>
+                          {String(children).replace(/\n$/, '')}
+                        </CodeBlock>
+                      );
+                    },
+                    p({ children }) {
+                      return <p className="mb-2 last:mb-0">{children}</p>;
+                    },
+                    ul({ children }) {
+                      return <ul className="list-disc list-outside ml-4 mb-2 space-y-1">{children}</ul>;
+                    },
+                    ol({ children }) {
+                      return <ol className="list-decimal list-outside ml-4 mb-2 space-y-1">{children}</ol>;
+                    },
+                    li({ children }) {
+                      return <li className="text-white">{children}</li>;
+                    },
+                    strong({ children }) {
+                      return <strong className="font-bold text-white">{children}</strong>;
+                    },
+                    em({ children }) {
+                      return <em className="italic">{children}</em>;
+                    },
+                    a({ href, children }) {
+                      return (
+                        <a
+                          href={href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-300 hover:text-blue-200 underline"
+                        >
+                          {children}
+                        </a>
+                      );
+                    },
+                  }}
+                >
+                  {message.content}
+                </ReactMarkdown>
+              </div>
             </div>
           ) : (
             // Assistant messages - NO bubble, just plain text
@@ -207,3 +265,13 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
     </div>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export const ChatMessage = memo(ChatMessageComponent, (prevProps, nextProps) => {
+  // Only re-render if message content, loading state, or id changes
+  return (
+    prevProps.message.id === nextProps.message.id &&
+    prevProps.message.content === nextProps.message.content &&
+    prevProps.isLoading === nextProps.isLoading
+  );
+});

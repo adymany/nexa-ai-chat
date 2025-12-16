@@ -7,7 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization');
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
         { error: 'No token provided' },
@@ -19,10 +19,10 @@ export async function GET(request: NextRequest) {
 
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; username: string };
-      
+
       // Get user with all their chat sessions
       const user = await getUserById(decoded.userId);
-      
+
       if (!user) {
         return NextResponse.json(
           { error: 'User not found' },
@@ -31,18 +31,18 @@ export async function GET(request: NextRequest) {
       }
 
       // Return chat sessions with last message preview
-      const sessions = user.chatSessions.map(session => ({
+      const sessions = user.chatSessions.map((session: any) => ({
         id: session.id,
         sessionName: session.sessionName,
         createdAt: session.createdAt,
         updatedAt: session.updatedAt,
-        messageCount: session.messages.length,
+        messageCount: session._count?.messages || 0,
         lastMessage: session.messages[0] || null,
       }));
 
       return NextResponse.json({ sessions });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (jwtError) {
       return NextResponse.json(
         { error: 'Invalid token' },

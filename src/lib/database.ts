@@ -12,11 +12,11 @@ export async function createUser(data: CreateUserData) {
       username: data.username,
       passwordHash: data.passwordHash,
     };
-    
+
     if (data.sessionId) {
       createData.sessionId = data.sessionId;
     }
-    
+
     return await prisma.user.create({
       data: createData,
     });
@@ -51,10 +51,23 @@ export async function getUserById(id: string) {
     include: {
       chatSessions: {
         orderBy: { updatedAt: 'desc' },
-        include: {
+        take: 50, // Limit to most recent 50 sessions
+        select: {
+          id: true,
+          sessionName: true,
+          createdAt: true,
+          updatedAt: true,
+          _count: {
+            select: { messages: true }
+          },
           messages: {
             orderBy: { createdAt: 'desc' },
             take: 1,
+            select: {
+              content: true,
+              role: true,
+              createdAt: true,
+            }
           },
         },
       },
@@ -167,7 +180,7 @@ export async function getChatSessionWithMessageCount(sessionId: string) {
 export async function deleteOldSessions(daysOld: number = 30) {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - daysOld);
-  
+
   return await prisma.chatSession.deleteMany({
     where: {
       updatedAt: {

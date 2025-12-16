@@ -43,6 +43,123 @@ export function ChatInput({ onSendMessage, disabled = false, placeholder = "Type
     }
   };
 
+  // Detect if pasted content looks like code
+  const detectCodeLanguage = (text: string): string | null => {
+    const lines = text.split('\n');
+    const hasMultipleLines = lines.length > 1;
+
+    // Common code patterns
+    const patterns = {
+      javascript: [
+        /\b(const|let|var|function|=>|async|await|import|export|require)\b/,
+        /console\.(log|error|warn)/,
+        /\{[\s\S]*\}/,
+      ],
+      typescript: [
+        /:\s*(string|number|boolean|any|void|never)\b/,
+        /interface\s+\w+/,
+        /type\s+\w+\s*=/,
+      ],
+      python: [
+        /\bdef\s+\w+\s*\(/,
+        /\bimport\s+\w+/,
+        /\bfrom\s+\w+\s+import/,
+        /:\s*\n\s+(if|for|while|def|class)/,
+      ],
+      java: [
+        /public\s+(class|static|void)/,
+        /System\.out\.print/,
+        /private\s+\w+\s+\w+;/,
+      ],
+      cpp: [
+        /#include\s*[<"]/,
+        /std::/,
+        /int\s+main\s*\(/,
+      ],
+      html: [
+        /<\/?[a-z]+[^>]*>/i,
+        /<!DOCTYPE/i,
+      ],
+      css: [
+        /[.#][\w-]+\s*\{/,
+        /:\s*(flex|grid|block|none|absolute|relative);/,
+      ],
+      sql: [
+        /\b(SELECT|INSERT|UPDATE|DELETE|FROM|WHERE|JOIN)\b/i,
+      ],
+      json: [
+        /^\s*[\[{]/,
+        /"\w+"\s*:/,
+      ],
+    };
+
+    // Check for each language
+    for (const [lang, langPatterns] of Object.entries(patterns)) {
+      for (const pattern of langPatterns) {
+        if (pattern.test(text)) {
+          return lang;
+        }
+      }
+    }
+
+    // Generic code detection - check for code-like characteristics
+    const codeIndicators = [
+      /[{}\[\]();]/, // brackets and semicolons
+      /^\s{2,}|\t/m, // indentation with spaces or tabs
+      /\/\/|\/\*|\*\/|#.*$/, // comments
+      /[=<>!]+/, // operators
+      /\b(if|else|for|while|return|class|function|def|import|from)\b/, // keywords
+    ];
+
+    let codeScore = 0;
+    for (const indicator of codeIndicators) {
+      if (indicator.test(text)) codeScore++;
+    }
+
+    // If it looks like code (2+ indicators and multiple lines), mark as generic code
+    if (codeScore >= 2 && hasMultipleLines) {
+      return 'text'; // generic code block
+    }
+
+    return null;
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const pastedText = e.clipboardData.getData('text');
+
+    // Skip if it's already markdown formatted
+    if (pastedText.includes('```')) {
+      return; // Let default paste happen
+    }
+
+    const detectedLang = detectCodeLanguage(pastedText);
+
+    if (detectedLang) {
+      e.preventDefault();
+
+      // Wrap pasted code in markdown code fence
+      const langTag = detectedLang === 'text' ? '' : detectedLang;
+      const wrappedCode = `\`\`\`${langTag}\n${pastedText}\n\`\`\``;
+
+      // Insert at cursor position
+      const textarea = textareaRef.current;
+      if (textarea) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const newMessage = message.slice(0, start) + wrappedCode + message.slice(end);
+        setMessage(newMessage);
+
+        // Update textarea height
+        setTimeout(() => {
+          if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 150)}px`;
+          }
+        }, 0);
+      }
+    }
+  };
+
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(e.target.value);
 
@@ -61,6 +178,7 @@ export function ChatInput({ onSendMessage, disabled = false, placeholder = "Type
           value={message}
           onChange={handleInput}
           onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
           placeholder={placeholder}
           disabled={disabled}
           rows={1}
