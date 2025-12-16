@@ -27,51 +27,53 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
   };
 
   return (
-    <div className={`flex gap-3 lg:gap-4 p-4 lg:p-6 transition-all duration-200 ${isUser ? 'flex-row-reverse' : 'flex-row'
+    <div className={`flex gap-3 lg:gap-4 p-4 lg:p-6 transition-all duration-200 ${isUser ? 'flex-row-reverse justify-start' : 'flex-row'
       }`}>
-      <div className="flex-shrink-0">
-        <div className={`w-7 h-7 lg:w-8 lg:h-8 rounded-lg flex items-center justify-center ${isUser
-          ? 'bg-blue-600 text-white'
-          : 'bg-gray-600 text-white'
-          }`}>
-          {isUser ? <User size={14} className="lg:hidden" /> : <Bot size={14} className="lg:hidden" />}
-          {isUser ? <User size={16} className="hidden lg:block" /> : <Bot size={16} className="hidden lg:block" />}
+      {/* Only show avatar for user messages */}
+      {isUser && (
+        <div className="flex-shrink-0">
+          <div className="w-7 h-7 lg:w-8 lg:h-8 rounded-lg flex items-center justify-center bg-blue-600 text-white">
+            <User size={14} className="lg:hidden" />
+            <User size={16} className="hidden lg:block" />
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className={`flex-1 space-y-2 min-w-0 max-w-[92%] lg:max-w-[95%] ${isUser ? 'flex flex-col items-end' : 'flex flex-col items-start'
+      <div className={`flex-1 space-y-2 min-w-0 ${isUser ? 'flex flex-col items-end max-w-[80%] lg:max-w-[70%]' : 'flex flex-col items-start'
         }`}>
-        <div className={`flex items-center gap-2 lg:gap-3 flex-wrap ${isUser ? 'flex-row-reverse' : 'flex-row'
-          }`}>
-          <span className="text-sm font-medium text-white">
-            {isUser ? 'You' : 'Assistant'}
-          </span>
-          {message.model && (
-            <span className="text-xs text-gray-400 font-medium">
-              {message.model}
+        {/* Hide header for assistant messages for cleaner look */}
+        {isUser && (
+          <div className="flex items-center gap-2 lg:gap-3 flex-wrap flex-row-reverse">
+            <span className="text-sm font-medium text-white">You</span>
+            <span className="text-xs text-gray-500">
+              {message.timestamp.toLocaleTimeString()}
             </span>
-          )}
-          <span className="text-xs text-gray-500">
-            {message.timestamp.toLocaleTimeString()}
-          </span>
-        </div>
+          </div>
+        )}
 
-        <div className="inline-block max-w-[85%]">
-          <div className={`leading-relaxed p-3 lg:p-4 rounded-2xl shadow-sm ${isUser
-            ? 'bg-blue-600 text-white rounded-br-md'
-            : 'bg-gray-700 text-white rounded-bl-md'
-            } ${isLoading ? 'animate-pulse' : ''
-            }`}
-            style={{
-              fontSize: '15px',
-              lineHeight: '1.6',
-              fontWeight: '400'
-            }}>
-            {isUser ? (
-              // User messages are plain text
+        <div className={isUser ? "inline-block" : "w-full"}>
+          {isUser ? (
+            // User messages in a bubble
+            <div
+              className="leading-relaxed px-4 py-3 rounded-2xl rounded-br-md bg-gray-700 text-white shadow-sm"
+              style={{
+                fontSize: '15px',
+                lineHeight: '1.6',
+                fontWeight: '400'
+              }}
+            >
               <div className="whitespace-pre-wrap">{message.content}</div>
-            ) : (
-              // Assistant messages render markdown with code blocks
+            </div>
+          ) : (
+            // Assistant messages - NO bubble, just plain text
+            <div
+              className={`text-gray-100 ${isLoading ? 'animate-pulse' : ''}`}
+              style={{
+                fontSize: '15px',
+                lineHeight: '1.75',
+                fontWeight: '400'
+              }}
+            >
               <div className="prose prose-invert prose-sm max-w-none">
                 <ReactMarkdown
                   components={{
@@ -82,7 +84,7 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
                       if (isInline) {
                         return (
                           <code
-                            className="bg-gray-600 px-1.5 py-0.5 rounded text-sm font-mono text-blue-300"
+                            className="bg-emerald-900/60 text-emerald-300 px-1.5 py-0.5 rounded text-sm font-mono border border-emerald-700/50"
                             {...props}
                           >
                             {children}
@@ -98,25 +100,25 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
                     },
                     // Style other markdown elements
                     p({ children }) {
-                      return <p className="mb-3 last:mb-0">{children}</p>;
+                      return <p className="mb-4 last:mb-0 text-gray-200">{children}</p>;
                     },
                     ul({ children }) {
-                      return <ul className="list-disc list-inside mb-3 space-y-1">{children}</ul>;
+                      return <ul className="list-disc list-outside ml-5 mb-4 space-y-2">{children}</ul>;
                     },
                     ol({ children }) {
-                      return <ol className="list-decimal list-inside mb-3 space-y-1">{children}</ol>;
+                      return <ol className="list-decimal list-outside ml-5 mb-4 space-y-2">{children}</ol>;
                     },
                     li({ children }) {
-                      return <li className="text-gray-200">{children}</li>;
+                      return <li className="text-gray-200 pl-1">{children}</li>;
                     },
                     h1({ children }) {
-                      return <h1 className="text-xl font-bold mb-3 mt-4 first:mt-0 text-white">{children}</h1>;
+                      return <h1 className="text-2xl font-bold mb-4 mt-6 first:mt-0 text-white">{children}</h1>;
                     },
                     h2({ children }) {
-                      return <h2 className="text-lg font-bold mb-2 mt-3 first:mt-0 text-white">{children}</h2>;
+                      return <h2 className="text-xl font-bold mb-3 mt-5 first:mt-0 text-white">{children}</h2>;
                     },
                     h3({ children }) {
-                      return <h3 className="text-base font-bold mb-2 mt-2 first:mt-0 text-white">{children}</h3>;
+                      return <h3 className="text-lg font-bold mb-2 mt-4 first:mt-0 text-white">{children}</h3>;
                     },
                     strong({ children }) {
                       return <strong className="font-bold text-white">{children}</strong>;
@@ -126,7 +128,7 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
                     },
                     blockquote({ children }) {
                       return (
-                        <blockquote className="border-l-4 border-blue-500 pl-4 my-3 italic text-gray-300">
+                        <blockquote className="border-l-4 border-blue-500 pl-4 my-4 italic text-gray-300 bg-gray-800/50 py-2 rounded-r">
                           {children}
                         </blockquote>
                       );
@@ -144,12 +146,12 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
                       );
                     },
                     hr() {
-                      return <hr className="border-gray-600 my-4" />;
+                      return <hr className="border-gray-700 my-6" />;
                     },
                     table({ children }) {
                       return (
-                        <div className="overflow-x-auto my-3">
-                          <table className="min-w-full border-collapse border border-gray-600">
+                        <div className="overflow-x-auto my-4">
+                          <table className="min-w-full border-collapse border border-gray-700">
                             {children}
                           </table>
                         </div>
@@ -157,14 +159,14 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
                     },
                     th({ children }) {
                       return (
-                        <th className="border border-gray-600 px-3 py-2 bg-gray-600 font-bold text-left">
+                        <th className="border border-gray-700 px-4 py-2 bg-gray-800 font-bold text-left text-white">
                           {children}
                         </th>
                       );
                     },
                     td({ children }) {
                       return (
-                        <td className="border border-gray-600 px-3 py-2">
+                        <td className="border border-gray-700 px-4 py-2 text-gray-200">
                           {children}
                         </td>
                       );
@@ -174,11 +176,11 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
                   {message.content}
                 </ReactMarkdown>
               </div>
-            )}
-            {isLoading && (
-              <span className="inline-block w-2 h-5 bg-blue-400 animate-pulse ml-1 rounded" />
-            )}
-          </div>
+              {isLoading && (
+                <span className="inline-block w-2 h-5 bg-blue-400 animate-pulse ml-1 rounded" />
+              )}
+            </div>
+          )}
         </div>
 
         {isAssistant && message.content && (

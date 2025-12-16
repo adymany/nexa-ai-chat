@@ -44,29 +44,25 @@ export function CodeBlock({ language, children }: CodeBlockProps) {
     const detectedLanguage = detectLanguage(children);
 
     return (
-        <div className="relative group my-3 rounded-xl overflow-hidden border border-gray-600 bg-gray-800">
+        <div className="relative group my-4 rounded-xl overflow-hidden border border-gray-700/50 bg-[#1a1a1a]">
             {/* Header with language badge and copy button */}
-            <div className="flex items-center justify-between px-4 py-2 bg-gray-700 border-b border-gray-600">
-                <span className="text-xs font-medium text-gray-300 uppercase tracking-wide">
+            <div className="flex items-center justify-between px-4 py-2.5 bg-[#252525] border-b border-gray-700/50">
+                <span className="text-xs font-medium text-gray-400 tracking-wide">
                     {detectedLanguage}
                 </span>
-                <button
-                    onClick={copyToClipboard}
-                    className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors px-2 py-1 rounded hover:bg-gray-600"
-                    title="Copy code"
-                >
-                    {copied ? (
-                        <>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={copyToClipboard}
+                        className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-white transition-colors p-1.5 rounded hover:bg-gray-700/50"
+                        title="Copy code"
+                    >
+                        {copied ? (
                             <Check size={14} className="text-green-400" />
-                            <span className="text-green-400">Copied!</span>
-                        </>
-                    ) : (
-                        <>
+                        ) : (
                             <Copy size={14} />
-                            <span>Copy</span>
-                        </>
-                    )}
-                </button>
+                        )}
+                    </button>
+                </div>
             </div>
 
             {/* Code content */}
@@ -76,17 +72,23 @@ export function CodeBlock({ language, children }: CodeBlockProps) {
                     style={oneDark}
                     customStyle={{
                         margin: 0,
-                        padding: '1rem',
-                        background: '#1e1e2e',
+                        padding: '1rem 1.25rem',
+                        background: '#1a1a1a',
                         fontSize: '0.875rem',
-                        lineHeight: '1.5',
+                        lineHeight: '1.6',
                     }}
-                    showLineNumbers={children.split('\n').length > 3}
-                    lineNumberStyle={{
-                        color: '#6b7280',
-                        paddingRight: '1rem',
-                        minWidth: '2.5rem',
+                    showLineNumbers={false}
+                    wrapLines={false}
+                    codeTagProps={{
+                        style: {
+                            background: 'transparent',
+                        }
                     }}
+                    PreTag={({ children, ...props }) => (
+                        <pre {...props} style={{ ...props.style, background: 'transparent' }}>
+                            {children}
+                        </pre>
+                    )}
                 >
                     {children}
                 </SyntaxHighlighter>
