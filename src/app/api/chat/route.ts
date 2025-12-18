@@ -251,6 +251,31 @@ export async function POST(req: NextRequest) {
           model,
           messages: formattedMessages,
           temperature,
+          onFinish: async ({ text }) => {
+            // Save assistant response to database if chatSessionId is provided and valid
+            if (chatSessionId && typeof chatSessionId === 'string' && chatSessionId.trim().length > 0) {
+              try {
+                // First verify the session exists
+                const chatSession = await prisma.chatSession.findUnique({
+                  where: { id: chatSessionId.trim() }
+                });
+
+                if (chatSession) {
+                  try {
+                    await createMessage({
+                      chatSessionId: chatSessionId.trim(),
+                      role: 'ASSISTANT',
+                      content: text,
+                    });
+                  } catch (messageError) {
+                    console.error('Error saving streaming assistant response to database:', messageError);
+                  }
+                }
+              } catch (dbError) {
+                console.error('Database error when saving streaming assistant response:', dbError);
+              }
+            }
+          },
         });
         return result.toTextStreamResponse();
       } else {
